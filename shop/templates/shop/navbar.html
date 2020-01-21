@@ -1,6 +1,9 @@
+{% load staticfiles %}
 <nav class="navbar navbar-expand-lg navbar-expand navbar-light bg-light ">
     <div class="collapse navbar-collapse">
-
+        <a class="navbar-brand" href="#">
+            <img src="{% static 'images/shop.svg' %}" width="50" height="50" alt="">
+        </a>
         <ul class="navbar-nav pl-0 mr-auto">
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'shop:index' %}">Home</a>
@@ -19,13 +22,13 @@
                     <a class="nav-link" href="{% url 'shop:index' %}">Register</a>
                 </li>
                 <p class="navbar-text mx-2"> or </p>
-                <li class="nav-item" >
+                <li class="nav-item">
                     <a class="nav-link" href="{% url 'shop:index' %}">Login</a>
                 </li>
 
             {% else %}
 
-{#                {% include 'shop/search_note_form.html' %}#}
+                {#                {% include 'shop/search_note_form.html' %}#}
 
                 <p class="nav-item nav-link">Hello {{ user }}</p>
                 <li class="nav-item">
