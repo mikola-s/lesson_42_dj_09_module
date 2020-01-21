@@ -13,9 +13,9 @@ class IndexView(ListView):
     template_name = 'shop/index.html'
     model = models.Product
 
-
-class UserCreate(CreateView):
-    pass
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
 
 
 class UserCreate(CreateView):
@@ -32,7 +32,6 @@ class UserCreate(CreateView):
         return data
 
 
-
 class UserLogin(LoginView):
     template_name = 'shop/user_login.html'
     success_url = '/'
@@ -41,3 +40,12 @@ class UserLogin(LoginView):
 class UserLogout(LogoutView):
     template_name = 'shop/user_logout.html'
     next_page = '/'
+
+
+class ProductCreate(CreateView):
+    http_method_names = ['post', 'get']
+    template_name = 'shop/product_create_form.html'
+    form_class = forms.ProductCreateForm
+    model = models.Product
+    success_url = '/'
+

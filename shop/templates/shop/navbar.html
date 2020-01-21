@@ -9,6 +9,14 @@
                 <a class="nav-link" href="{% url 'shop:index' %}">Home</a>
             </li>
 
+            {% if user.is_superuser %}
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'shop:product_create' %}">Create product</a>
+                </li>
+
+            {% endif %}
+
         </ul>
 
         <ul class="navbar-nav pl-0 pb-0 mt-2 mr-3" style="height: 50px">

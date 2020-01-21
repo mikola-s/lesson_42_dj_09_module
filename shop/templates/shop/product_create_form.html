@@ -1,0 +1,30 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+
+    <div class="col-md-10 col-sm-10 col-12 col box">
+        <form action="/" method="post">
+            {{ form }}
+        </form>
+{#        <form method="post" class="form mx-auto">#}
+{#            {% csrf_token %}#}
+{#            {{ form }}#}
+{##}
+{#                <div id="div_id_text" class="form-group">#}
+{#                    <label for="id_text" class="requiredField">#}
+{#                        Add new note<span class="asteriskField">*</span>#}
+{#                    </label>#}
+{#                    <div class="row">#}
+{#                        <div class="col">#}
+{#                            <textarea name="text" rows="1" maxlength="200"#}
+{#                                      class="textarea form-control" required=""#}
+{#                                      id="id_text">{% lorem 10 w random %}</textarea>#}
+{#                        </div>#}
+{#                        <button type="submit" class="btn btn-primary">New note</button>#}
+{#                    </div>#}
+{#                </div>#}
+{#        </form>#}
+
+    </div>
+
+{% endblock content %}
