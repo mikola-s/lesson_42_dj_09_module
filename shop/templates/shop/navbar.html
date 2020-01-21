@@ -1,0 +1,38 @@
+<nav class="navbar navbar-expand-lg navbar-expand navbar-light bg-light ">
+    <div class="collapse navbar-collapse">
+
+        <ul class="navbar-nav pl-0 mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'shop:index' %}">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'shop:index' %}">Public notes</a>
+            </li>
+        </ul>
+
+        <ul class="navbar-nav pl-0 pb-0 mt-2" style="height: 50px">
+
+            {% if not user.is_authenticated %}
+
+                <p class="navbar-text mx-2" id="nav-text">Hello Guest</p>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'shop:index' %}">Register</a>
+                </li>
+                <p class="navbar-text mx-2"> or </p>
+                <li class="nav-item" >
+                    <a class="nav-link" href="{% url 'shop:index' %}">Login</a>
+                </li>
+
+            {% else %}
+
+{#                {% include 'shop/search_note_form.html' %}#}
+
+                <p class="nav-item nav-link">Hello {{ user }}</p>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'shop:index' %}">Logout</a>
+                </li>
+
+            {% endif %}
+        </ul>
+    </div>
+</nav>

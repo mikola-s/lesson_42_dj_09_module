@@ -1,0 +1,56 @@
+{% extends 'shop/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+    {% if user.is_authenticated %}
+
+        <h2>You notes</h2>
+        <table class="table table-hover">
+            <thead class="thead-light">
+            <tr>
+                <th scope="col">time of creation</th>
+                <th scope="col">Text</th>
+                <th scope="col" class="text-center">Change status</th>
+                <th scope="col">Delete</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for note in notes %}
+                <tr>
+                    <td scope="row">{{ note.post_time|date:"H:i:s - d.m.Y" }}</td>
+                    <td>{{ note.text }}</td>
+                    <td class="">
+                        {# ---------- change note status form ------------------ #}
+{#                        {% include 'todo/update_note_status_form.html' %}#}
+                    </td>
+                    <td>
+                        {# ---------- delete note form ------------------ #}
+{#                        {% include 'todo/delete_note_form.html' %}#}
+                    </td>
+                </tr>
+
+            {% empty %}
+                <tr><td>no one note</td></tr>
+            {% endfor %}
+
+        </table>
+
+        {#----------- create note form ---------------- #}
+{#        {% include 'todo/create_note_form.html' %}#}
+
+    {% else %}
+        <p class="text-center my-auto">
+{#            <a href="{% url 'todo:create' %}">register</a>#}
+            or
+{#            <a href="{% url 'todo:login' %}">login</a>#}
+            to see the contents
+        </p>
+    {% endif %}
+
+
+{#{% include 'todo/index_page_navigator.html' %}#}
+
+
+{% endblock content %}
