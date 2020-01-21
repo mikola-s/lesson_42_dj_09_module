@@ -8,22 +8,22 @@
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'shop:index' %}">Home</a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'shop:index' %}">Public notes</a>
-            </li>
+{#            <li class="nav-item">#}
+{#                <a class="nav-link" href="{% url 'shop:index' %}">Public notes</a>#}
+{#            </li>#}
         </ul>
 
-        <ul class="navbar-nav pl-0 pb-0 mt-2" style="height: 50px">
+        <ul class="navbar-nav pl-0 pb-0 mt-2 mr-3" style="height: 50px">
 
             {% if not user.is_authenticated %}
 
                 <p class="navbar-text mx-2" id="nav-text">Hello Guest</p>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'shop:index' %}">Register</a>
+                    <a class="nav-link" href="{% url 'shop:user_create' %}">Register</a>
                 </li>
                 <p class="navbar-text mx-2"> or </p>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'shop:index' %}">Login</a>
+                    <a class="nav-link" href="{% url 'shop:user_login' %}">Login</a>
                 </li>
 
             {% else %}
@@ -32,7 +32,7 @@
 
                 <p class="nav-item nav-link">Hello {{ user }}</p>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'shop:index' %}">Logout</a>
+                    <a class="nav-link" href="{% url 'shop:user_logout' %}">Logout</a>
                 </li>
 
             {% endif %}

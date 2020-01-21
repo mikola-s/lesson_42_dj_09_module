@@ -9,6 +9,9 @@ class Profile(models.Model):
     user = models.OneToOneField(to=User, on_delete=models.CASCADE, related_name='profile')
     cash = models.PositiveIntegerField(default=10000)
 
+    def __str__(self):
+        return self.user.username
+
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
