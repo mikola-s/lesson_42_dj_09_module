@@ -6,7 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.views.generic import FormView
 
 from . import models
-from .  import forms
+from . import forms
 
 
 class IndexView(ListView):
