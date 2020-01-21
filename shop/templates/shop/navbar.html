@@ -8,9 +8,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'shop:index' %}">Home</a>
             </li>
-{#            <li class="nav-item">#}
-{#                <a class="nav-link" href="{% url 'shop:index' %}">Public notes</a>#}
-{#            </li>#}
+
         </ul>
 
         <ul class="navbar-nav pl-0 pb-0 mt-2 mr-3" style="height: 50px">
@@ -27,8 +25,6 @@
                 </li>
 
             {% else %}
-
-                {#                {% include 'shop/search_note_form.html' %}#}
 
                 <p class="nav-item nav-link">Hello {{ user }}</p>
                 <li class="nav-item">

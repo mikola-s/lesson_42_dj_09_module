@@ -4,15 +4,20 @@
 
 {% block content %}
 
-    <form method="post" class="form col-md-6 col-sm-6 col-12 mx-auto">
+    <div class="col-md-8 col-sm-8 col-12 col box">
 
-        {% csrf_token %}
-        {{ form|crispy }}
+        {% include 'shop/messages.html' %}
 
-        <div class="text-right">
-            <button type="submit" class="btn btn-primary">Log in</button>
-        </div>
+        <form method="post" class="form col-md-6 col-sm-6 col-12 mx-auto">
 
-    </form>
+            {% csrf_token %}
+            {{ form|crispy }}
+
+            <div class="text-right">
+                <button type="submit" class="btn btn-primary">Log in</button>
+            </div>
+
+        </form>
+    </div>
 
 {% endblock content %}

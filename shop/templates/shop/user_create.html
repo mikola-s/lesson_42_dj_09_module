@@ -3,15 +3,19 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+    <div class="col-md-8 col-sm-8 col-12 col box">
 
-    <form method="post" class="form col-md-6 col-sm-6 col-12 mx-auto">
+        {% include 'shop/messages.html' %}
 
-        {% csrf_token %}
-        {{ form|crispy }}
+        <form method="post" class="form col-md-6 col-sm-6 col-12 mx-auto">
 
-        <div class="text-right">
-            <button type="submit" class="btn btn-primary">Confirm</button>
-        </div>
-    </form>
+            {% csrf_token %}
+            {{ form|crispy }}
+
+            <div class="text-right">
+                <button type="submit" class="btn btn-primary">Confirm</button>
+            </div>
+        </form>
+    </div>
 
 {% endblock content %}
