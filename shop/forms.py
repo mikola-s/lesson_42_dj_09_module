@@ -1,6 +1,6 @@
 from django.forms import ModelForm
 from django import forms
-from .models import Product
+from .models import Product, Purchase
 
 
 class ProductCreateForm(ModelForm):
@@ -9,3 +9,7 @@ class ProductCreateForm(ModelForm):
         fields = '__all__'
 
 
+class PurchaseCreateForm(ModelForm):
+    class Meta:
+        model = Purchase
+        fields = ['count', ]

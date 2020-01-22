@@ -82,3 +82,8 @@ class ProductUpdate(SuccessMessageMixin, UpdateView):
     # def get_context_data(self, **kwargs):
     #     context = super().get_context_data(**kwargs)
     #     return context
+
+
+class PurchaseCreate(CreateView):
+    template_name = 'shop/purchase_create.html'
+    model = models.Purchase
