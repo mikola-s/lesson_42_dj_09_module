@@ -1,7 +1,9 @@
 {% load staticfiles %}
 
 <div class="card rounded col-3 px-0 ml-0 mb-1 mr-1">
-    <img class="card-img-top" src="{{ product.photo }}" alt="Card image cap">
+    <img class="card-img-top" src="{{ product.photo }}" alt="image"
+         onerror="if (this.src != 'static/images/alt.svg') {this.src = 'static/images/alt.svg'}"
+    >
     <div class="card-body pt-0">
         <h5 class="card-title">{{ product.name }}</h5>
         <p class="card-text">{{ product.description }}</p>
@@ -11,22 +13,27 @@
         <div class="row px-3">
             <div class="mr-auto pt-1 pb-0 mb-0">
                 <p class="text-info p-0 m-0">price <span class="badge cost p-0 m-0 ml-4">{{ product.price }}</span></p>
-                <p class="text-info p-0 m-0">in stock <span class="badge in-stock p-0 m-0 ml-1">{{ product.count }}</span></p>
+                <p class="text-info p-0 m-0">in stock <span
+                        class="badge in-stock p-0 m-0 ml-1">{{ product.count }}</span></p>
             </div>
 
             {% if user.is_authenticated %}
 
-                <div class="">
-                    <a class="nav-link btn btn-outline-info m-0"
+                <form action="{% if user.is_superuser %}
+                                {% url 'shop:product_update' product.pk %}
+                            {% endif %}">
+                    <div class="">
+                        <button type="submit" class="nav-link btn btn-outline-info m-0"
 
-                        {% if user.is_superuser %}
-                            href="#">Update
-                        {% else %}
-                            href="#">Buy
-                        {% endif %}
+                                {% if user.is_superuser %}
+                                href="#">Update
+                                {% else %}
+                                    href="#">Buy
+                                {% endif %}
 
-                    </a>
-                </div>
+                        </button>
+                    </div>
+                </form>
 
             {% endif %}
 

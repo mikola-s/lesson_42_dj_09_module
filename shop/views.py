@@ -54,12 +54,19 @@ class UserLogout(SuccessMessageMixin, LogoutView):
 
 
 class ProductCreate(SuccessMessageMixin, CreateView):
-    http_method_names = ['post', 'get']
     template_name = 'shop/product_create_form.html'
     form_class = forms.ProductCreateForm
     model = models.Product
     success_url = '/product_create/'
     success_message = 'success crate product %(name)s'
+
+
+class ProductUpdate(SuccessMessageMixin, UpdateView):
+    template_name = 'shop/product_update_form.html'
+    form_class = forms.ProductCreateForm
+    model = models.Product
+    success_url = '/'
+    success_message = 'success update product %(name)s'
 
     # def form_valid(self, form):
     #     # for debug
