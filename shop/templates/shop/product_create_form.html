@@ -1,30 +1,70 @@
 {% extends 'shop/base.html' %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 
-    <div class="col-md-10 col-sm-10 col-12 col box">
-        <form action="/" method="post">
-            {{ form }}
-        </form>
-{#        <form method="post" class="form mx-auto">#}
-{#            {% csrf_token %}#}
-{#            {{ form }}#}
-{##}
-{#                <div id="div_id_text" class="form-group">#}
-{#                    <label for="id_text" class="requiredField">#}
-{#                        Add new note<span class="asteriskField">*</span>#}
-{#                    </label>#}
-{#                    <div class="row">#}
-{#                        <div class="col">#}
-{#                            <textarea name="text" rows="1" maxlength="200"#}
-{#                                      class="textarea form-control" required=""#}
-{#                                      id="id_text">{% lorem 10 w random %}</textarea>#}
-{#                        </div>#}
-{#                        <button type="submit" class="btn btn-primary">New note</button>#}
-{#                    </div>#}
-{#                </div>#}
-{#        </form>#}
+    {% include 'shop/messages.html' %}
 
+    <div class="col-md-8 col-sm-8 col-12 col box">
+        <div class="mx-auto">
+            <form method="post" class="form col-6 mx-auto">
+                {% csrf_token %}
+
+                <div class="form-group mx-0 mb-0">
+                    {{ form.name|as_crispy_field }}
+                </div>
+                <div class="form-group mx-0">
+
+                    <label for="id_description" class="requiredField">
+                        Description<span class="asteriskField">*</span>
+                    </label>
+                    <input type="text"
+                           name="description"
+                           maxlength="256"
+                           class="textinput textInput form-control"
+                           required="" id="id_description"
+                           value="{% lorem 6 w random %}">
+                </div>
+
+                <div class="form-group mb-0">
+                    {{ form.price|as_crispy_field }}
+                </div>
+
+
+                <div class="form-group">
+                    {#                    {{ form.photo|as_crispy_field }}#}
+
+                    <label for="id_photo" class=" requiredField">
+                        Photo<span class="asteriskField">*</span>
+                    </label>
+                    <div class="custom-file">
+                        <input type="file" name="photo" class="custom-file-input" id="id_photo"
+                               aria-describedby="inputGroupFileAddon01">
+                        <label class="custom-file-label" for="id_photo" id="id_label">Choose file</label>
+                    </div>
+                </div>
+
+
+                <div class="form-group mb-0">
+                    {{ form.count|as_crispy_field }}
+                </div>
+
+
+                <div class="text-right">
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+
+
+            </form>
+        </div>
     </div>
+
+    {% block script %}
+        <script src="{% static 'js/jquery-3.4.1.js' %}"></script>
+        <script src="{% static 'js/bootstrap.js' %}"></script>
+        <script src="{% static 'js/script.js' %}"></script>
+        <script src="{% static 'js/load_file.js' %}"></script>
+    {% endblock script %}
 
 {% endblock content %}
