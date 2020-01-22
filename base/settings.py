@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'bootstrap_pagination',
     'debug_toolbar',
     'crispy_forms',
     'shop.apps.ShopConfig',

@@ -15,7 +15,8 @@ class IndexView(ListView):
     model = models.Product
     queryset = model.objects.all()
     context_object_name = 'products'
-
+    paginate_by = 8
+    ordering = 'price'
     # def dispatch(self, request, *args, **kwargs):
     #     data = super().dispatch(request, *args, **kwargs)
     #     return data

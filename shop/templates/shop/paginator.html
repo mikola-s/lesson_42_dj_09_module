@@ -1,0 +1,7 @@
+{% load bootstrap_pagination %}
+
+{% if is_paginated %}
+    <nav class="mt-4" aria-label="Page navigation">
+        {% bootstrap_paginate page_obj range=7 show_prev_next="false" show_first_last="true" extra_pagination_classes="pagination-lg justify-content-center"%}
+    </nav>
+{% endif %}
