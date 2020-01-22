@@ -1,0 +1,12 @@
+<form class="col-4 px-0" action="{% url 'shop:purchase_create' product.pk %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="col nav-link btn btn-outline-info m-0 mx-auto">Buy</button>
+    <input type="number"
+           min="0"
+           max="{{ product.count }}"
+           value="1"
+           class="numberinput form-control pl-2 pr-1 py-3 text-right m-0 mt-1"
+           required=""
+           name="count"
+           id="id_count_{{ product.pk }}">
+</form>

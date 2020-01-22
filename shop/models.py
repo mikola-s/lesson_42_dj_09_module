@@ -37,7 +37,7 @@ class Product(models.Model):
 
 class Purchase(models.Model):
     buyer = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
+    product = models.ForeignKey(Product, on_delete=models.DO_NOTHING, related_name='products')
     count = models.PositiveIntegerField()
     time = models.DateTimeField(auto_now_add=True)
 

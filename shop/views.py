@@ -17,14 +17,17 @@ class IndexView(ListView):
     context_object_name = 'products'
     paginate_by = 8
     ordering = 'price'
+
     # def dispatch(self, request, *args, **kwargs):
+    #    # for debug
     #     data = super().dispatch(request, *args, **kwargs)
     #     return data
     #
-    # def get_context_data(self, **kwargs):
-    #     # for debug
-    #     context = super().get_context_data(**kwargs)
-    #     return context
+    def get_context_data(self, **kwargs):
+        # for debug
+        context = super().get_context_data(**kwargs)
+        context.update({'purchase_create_form': forms.PurchaseCreateForm})
+        return context
 
 
 class UserCreate(SuccessMessageMixin, CreateView):
@@ -84,6 +87,9 @@ class ProductUpdate(SuccessMessageMixin, UpdateView):
     #     return context
 
 
-class PurchaseCreate(CreateView):
+class PurchaseCreate(SuccessMessageMixin, CreateView):
     template_name = 'shop/purchase_create.html'
+    form_class = forms.PurchaseCreateForm
     model = models.Purchase
+    success_url = '/'
+    success_message = 'successfully bought %(count)s %(product)s '

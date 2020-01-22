@@ -2,8 +2,7 @@
 
 <div class="card rounded col-3 px-0 ml-0 mb-1 mr-1">
     <img class="card-img-top" src="{{ product.photo }}" alt="image"
-         onerror="if (this.src != 'static/images/alt.svg') this.src = 'static/images/alt.svg'"
-    >
+         onerror="if (this.src != 'static/images/alt.svg') this.src = 'static/images/alt.svg'">
     <div class="card-body pt-0">
         <h5 class="card-title">{{ product.name }}</h5>
         <p class="card-text">{{ product.description }}</p>
@@ -19,21 +18,19 @@
 
             {% if user.is_authenticated %}
 
-                <form action="{% if user.is_superuser %}
-                                {% url 'shop:product_update' product.pk %}
-                            {% endif %}">
-                    <div class="">
-                        <button type="submit" class="nav-link btn btn-outline-info m-0"
+                {% if user.is_superuser %}
 
-                                {% if user.is_superuser %}
-                                href="#">Update
-                                {% else %}
-                                    href="#">Buy
-                                {% endif %}
+                    <form action="{% url 'shop:product_update' product.pk %}" method="post">
+                        {% csrf_token %}
+                        <div>
+                            <button type="submit" class="nav-link btn btn-outline-info m-0">Update</button>
+                        </div>
+                    </form>
 
-                        </button>
-                    </div>
-                </form>
+                {% else %}
+                    {% include 'shop/purchace_create_form.html' %}
+                {% endif %}
+
 
             {% endif %}
 
