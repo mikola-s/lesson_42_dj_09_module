@@ -87,9 +87,16 @@ class ProductUpdate(SuccessMessageMixin, UpdateView):
     #     return context
 
 
-class PurchaseCreate(SuccessMessageMixin, CreateView):
+class PurchaseCreate(CreateView, SuccessMessageMixin):
     template_name = 'shop/purchase_create.html'
     form_class = forms.PurchaseCreateForm
     model = models.Purchase
     success_url = '/'
     success_message = 'successfully bought %(count)s %(product)s '
+
+    def form_valid(self, form):
+        form_add = form.save(commit=False)
+        form_add.buyer_id = self.request.user.pk
+        form_add.product_id = self.kwargs['pk']
+        return super().form_valid(form)
+
