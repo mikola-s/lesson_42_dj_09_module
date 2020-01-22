@@ -1,15 +1,22 @@
 {% extends 'shop/base.html' %}
 {% load staticfiles %}
+{% load static %}
 {% load crispy_forms_tags %}
+
+
 
 {% block content %}
 
     <div class="col-md-8 col-sm-8 col-12 col box">
-        <div class="mx-auto">
+
+
+        <div class="col-6 mx-auto">
 
             {% include 'shop/messages.html' %}
 
-            <form method="post" enctype="multipart/form-data" class="form col-6 mx-auto">
+
+            <form method="post" enctype="multipart/form-data" class="form">
+
                 {% csrf_token %}
 
                 <div class="form-group mx-0 mb-0">
@@ -23,7 +30,7 @@
                     {{ form.price|as_crispy_field }}
                 </div>
 
-{#                    {{ form.photo }}#}
+                {#                    {{ form.photo }}#}
 
 
                 <br>
@@ -35,7 +42,8 @@
                     <div class="custom-file">
                         <input type="file" name="photo" class="custom-file-input" id="id_photo"
                                aria-describedby="inputGroupFileAddon01">
-                        <label class="custom-file-label" for="id_photo" id="id_label">{{ product.photo.name }}</label>
+                        <label class="custom-file-label" for="id_photo"
+                               id="id_label">{{ product.photo.name }}</label>
 
                     </div>
 

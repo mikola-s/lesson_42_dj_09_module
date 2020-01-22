@@ -1,5 +1,6 @@
 <form class="col-4 px-0" action="{% url 'shop:purchase_create' product.pk %}" method="post">
     {% csrf_token %}
+    {% include 'shop/success_url.html' %}
     <button type="submit" class="col nav-link btn btn-outline-info m-0 mx-auto">Buy</button>
     <input type="number"
            min="0"

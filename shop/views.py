@@ -4,6 +4,7 @@ from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib import messages
 from django.views.generic import FormView
 
 from . import models
@@ -18,16 +19,17 @@ class IndexView(ListView):
     paginate_by = 8
     ordering = 'price'
 
-    # def dispatch(self, request, *args, **kwargs):
-    #    # for debug
-    #     data = super().dispatch(request, *args, **kwargs)
-    #     return data
+    def dispatch(self, request, *args, **kwargs):
+       # for debug
+        data = super().dispatch(request, *args, **kwargs)
+        return data
     #
-    def get_context_data(self, **kwargs):
-        # for debug
-        context = super().get_context_data(**kwargs)
-        context.update({'purchase_create_form': forms.PurchaseCreateForm})
-        return context
+
+    # def get_context_data(self, **kwargs):
+    #     # for debug
+    #     context = super().get_context_data(**kwargs)
+    #     context.update({'purchase_create_form': forms.PurchaseCreateForm})
+    #     return context
 
 
 class UserCreate(SuccessMessageMixin, CreateView):
@@ -64,7 +66,7 @@ class ProductCreate(SuccessMessageMixin, CreateView):
     success_message = 'success crate product %(name)s'
 
 
-class ProductUpdate(SuccessMessageMixin, UpdateView):
+class ProductUpdate(UpdateView, SuccessMessageMixin):
     template_name = 'shop/product_update_form.html'
     form_class = forms.ProductCreateForm
     model = models.Product
@@ -82,21 +84,33 @@ class ProductUpdate(SuccessMessageMixin, UpdateView):
     #     data = super().form_invalid(form)
     #     return data
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     return context
+    def get_success_url(self):
+        url = super().get_success_url()
+        success_url = self.request.POST.get('success_url')
+        return success_url if success_url else url
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({"image_src_1": 'image/alt.svg'})
+        context.update({"image_src_2": '/static/image/alt.svg'})
+        return context
 
 
-class PurchaseCreate(CreateView, SuccessMessageMixin):
+class PurchaseCreate(SuccessMessageMixin, CreateView):
     template_name = 'shop/purchase_create.html'
     form_class = forms.PurchaseCreateForm
     model = models.Purchase
     success_url = '/'
-    success_message = 'successfully bought %(count)s %(product)s '
+    success_message = 'successfully bought %(count)s %(product)s'
 
     def form_valid(self, form):
         form_add = form.save(commit=False)
         form_add.buyer_id = self.request.user.pk
         form_add.product_id = self.kwargs['pk']
+        form.cleaned_data.update({'product': form.instance.product.name})
         return super().form_valid(form)
 
+    def get_success_url(self):
+        url = super().get_success_url()
+        success_url = self.request.POST.get('success_url')
+        return success_url if success_url else url

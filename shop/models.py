@@ -41,6 +41,10 @@ class Purchase(models.Model):
     count = models.PositiveIntegerField()
     time = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        time = localtime(self.time).strftime("%Y-%m-%d %H:%M:%S")
+        return f"{self.buyer.username} / ({self.count}) {self.product.name} -- {time}"
+
 
 class Return(models.Model):
     purchase = models.OneToOneField(to=Purchase, on_delete=models.CASCADE, related_name='purchase')

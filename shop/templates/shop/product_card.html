@@ -1,6 +1,6 @@
 {% load staticfiles %}
 
-<div class="card rounded col-3 px-0 ml-0 mb-1 mr-1">
+<div class="card rounded col-3 px-0 ml-0 mb-1 mr-1" >
     <img class="card-img-top" src="{{ product.photo }}" alt="image"
          onerror="if (this.src != 'static/images/alt.svg') this.src = 'static/images/alt.svg'">
     <div class="card-body pt-0">
@@ -20,8 +20,9 @@
 
                 {% if user.is_superuser %}
 
-                    <form action="{% url 'shop:product_update' product.pk %}" method="post">
-                        {% csrf_token %}
+                    <form action="{% url 'shop:product_update' product.pk %}">
+{#                        {% csrf_token %}#}
+                        {% include 'shop/success_url.html' %}
                         <div>
                             <button type="submit" class="nav-link btn btn-outline-info m-0">Update</button>
                         </div>
