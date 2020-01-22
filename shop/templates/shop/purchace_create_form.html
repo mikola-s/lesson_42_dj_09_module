@@ -9,4 +9,14 @@
            required=""
            name="count"
            id="id_count_{{ product.pk }}">
+    {% with errors=purchase_create_form.errors %}
+        {% if errors|length == 1 %}
+            <p class="invalid-feedback"><strong>{{ errors|striptags }}</strong></p>
+        {% elif errors|length > 1 %}
+            {% for error in errors %}
+                <p class="invalid-feedback"><strong>{{ error|striptags }}</strong></p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
 </form>
