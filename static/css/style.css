@@ -78,3 +78,8 @@ em {
 .btn {
     white-space: nowrap;
 }
+
+
+.invalid-feedback {
+    display: inline;
+}

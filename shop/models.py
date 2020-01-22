@@ -28,8 +28,11 @@ class Product(models.Model):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=256)
     price = models.PositiveIntegerField()
-    photo = models.ImageField(upload_to='static/images/')
+    photo = models.FileField(upload_to='static/images/')
     count = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.pk} {self.name}"
 
 
 class Purchase(models.Model):

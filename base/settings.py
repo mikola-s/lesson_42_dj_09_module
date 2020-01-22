@@ -127,4 +127,4 @@ LOGIN_REDIRECT_URL = '/'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-MEDIA_ROOT = 'static/images/'
+MEDIA_ROOT = ''

@@ -8,3 +8,4 @@ class ProductCreateForm(ModelForm):
         model = Product
         fields = '__all__'
 
+
