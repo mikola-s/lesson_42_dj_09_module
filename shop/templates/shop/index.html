@@ -22,15 +22,16 @@
 
         <div class="card-group mx-0 px-0">
 
-            {% include 'shop/product_card.html' %}
-            {% include 'shop/product_card.html' %}
-            {% include 'shop/product_card.html' %}
-            {% include 'shop/product_card.html' %}
-            <div class="w-100"></div>
-            {% include 'shop/product_card.html' %}
-            {% include 'shop/product_card.html' %}
-            {% include 'shop/product_card.html' %}
-            {% include 'shop/product_card.html' %}
+            {% for product in products %}
+
+                {% include 'shop/product_card.html' %}
+
+                {% if forloop.counter|divisibleby:"4" %}
+                    <div class="w-100"></div>
+                {% endif %}
+            {% empty %}
+                <p>Нет продустов</p>
+            {% endfor %}
 
         </div>
     </div>

@@ -83,3 +83,11 @@ em {
 .invalid-feedback {
     display: inline;
 }
+
+.cost {
+    font-size: 180%;
+}
+
+.in-stock {
+    font-size: 120%;
+}

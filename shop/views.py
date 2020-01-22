@@ -14,15 +14,16 @@ class IndexView(ListView):
     template_name = 'shop/index.html'
     model = models.Product
     queryset = model.objects.all()
+    context_object_name = 'products'
 
-    def dispatch(self, request, *args, **kwargs):
-        data = super().dispatch(request, *args, **kwargs)
-        return data
-
-    def get_context_data(self, **kwargs):
-        # for debug
-        context = super().get_context_data(**kwargs)
-        return context
+    # def dispatch(self, request, *args, **kwargs):
+    #     data = super().dispatch(request, *args, **kwargs)
+    #     return data
+    #
+    # def get_context_data(self, **kwargs):
+    #     # for debug
+    #     context = super().get_context_data(**kwargs)
+    #     return context
 
 
 class UserCreate(SuccessMessageMixin, CreateView):
