@@ -13,7 +13,7 @@ from . import forms
 
 
 class IndexView(ListView):
-    template_name = 'shop/page_item/templates/shop/product/index.html'
+    template_name = 'shop/product/index.html'
     model = models.Product
     queryset = model.objects.all()
     context_object_name = 'products'
@@ -121,10 +121,10 @@ class PurchaseList(ListView):
         qs = qs.annotate(image_path_for_static=Func(F('product__photo'), Value(8), function='substr'))
         return qs
 
-    # def get_context_data(self, *, object_list=None, **kwargs):
-    #     # for debug
-    #     data = super().get_context_data(object_list=None, **kwargs)
-    #     return data
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=None, **kwargs)
+        context = context.update({'return_create': forms.ReturnCreateForm})
+        return context
 
 
 class PurchaseDelete(SuccessMessageMixin, DeleteView):
@@ -132,7 +132,10 @@ class PurchaseDelete(SuccessMessageMixin, DeleteView):
 
 
 class ReturnCreate(SuccessMessageMixin, CreateView):
-    pass
+    template_name = 'shop/return/create.html'
+    form_class = forms.ReturnCreateForm
+    success_url = '/purchase_list/'
+    success_message = 'success create return request %(purchase)s '
 
 
 class ReturnList(ListView):

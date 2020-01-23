@@ -43,9 +43,12 @@
                             <td class="text-center">
                                 {{ purchase.product.name }}
                                 <div class="mx-auto mt-1">
-                                    <button type="submit" class="nav-link btn btn-outline-info mx-auto" href="#">Return
-                                        product
-                                    </button>
+                                    <form action="{% url 'shop:return_create' %}">
+                                        <button type="submit" class="nav-link btn btn-outline-info mx-auto">
+                                            Return
+                                            product
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                             <td>{{ purchase.product.price }}</td>
