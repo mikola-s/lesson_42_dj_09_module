@@ -118,7 +118,7 @@ class PurchaseList(ListView):
         qs = super().get_queryset()
         qs = qs.filter(buyer_id=self.request.user.pk)
         qs = qs.annotate(total=F('count') * F('product__price'))
-        qs = qs.annotate(image_path_for_static=Func(F('product__photo'), Value(8), function='substr'))
+        qs = qs.annotate(path_for_static=Func(F('product__photo'), Value(8), function='substr'))
         return qs
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -128,7 +128,10 @@ class PurchaseList(ListView):
 
 
 class PurchaseDelete(SuccessMessageMixin, DeleteView):
-    pass
+    model = models.Purchase
+    template_name = 'shop/purchase/delete.html'
+    success_url = '/'
+    success_message = 'success confirm return %(return)s'
 
 
 class ReturnCreate(SuccessMessageMixin, CreateView):
@@ -137,10 +140,15 @@ class ReturnCreate(SuccessMessageMixin, CreateView):
     success_url = '/purchase_list/'
     success_message = 'success create return request %(purchase)s '
 
-    def form_valid(self, form):
+    def form_valid(self, form):  # for debug
         # form_add = form.save(commit=False)
         # form_add.buyer_id = self.request.user.pk
         return super().form_valid(form)
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        success_url = self.request.POST.get('success_url')
+        return success_url if success_url else url
 
     # def form_valid(self, form):
     #     form_add = form.save(commit=False)
@@ -151,7 +159,27 @@ class ReturnCreate(SuccessMessageMixin, CreateView):
 
 
 class ReturnList(ListView):
-    pass
+    template_name = 'shop/return/list.html'
+    model = models.Return
+    context_object_name = 'returns'
+    paginate_by = 6
+    ordering = 'time'
+    page_kwarg = 'page'
+    # queryset = model.objects.filter(purchase__product__price=)
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.get_queryset()
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = qs.annotate(total=F('purchase__count') * F('purchase__product__price'))
+        qs = qs.annotate(path_for_static=Func(F('purchase__product__photo'), Value(8), function='substr'))
+        return qs
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=None, **kwargs)
+        return context
 
 
 class ReturnDelete(SuccessMessageMixin, DeleteView):

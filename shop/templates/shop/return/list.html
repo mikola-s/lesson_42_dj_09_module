@@ -1,0 +1,76 @@
+{% extends 'shop/page_item/base.html' %}
+
+{% load staticfiles %}
+
+{#{% load crispy_forms_tags %}#}
+
+{% block content %}
+
+    {% if user.is_authenticated %}
+
+
+        <div class="col-md-8 col-sm-8 col-12 col box">
+
+            {% include 'shop/page_item/messages.html' %}
+
+            <h2>Return list</h2>
+
+            <div class="card-group mx-0 px-0">
+
+                {#            ---------------------------------------------------------------------------#}
+
+
+                <table class="table table-hover">
+                    <thead class="thead-light">
+                    <tr>
+                        <th>User</th>
+                        <th scope="col" class="text-center">Image</th>
+                        <th scope="col" class="text-center">Product</th>
+                        <th scope="col" class="text-center">Count</th>
+                        <th scope="col" class="text-center">Price</th>
+                        <th scope="col" class="text-center">Total cost</th>
+                        <th scope="col" class="text-center">Data</th>
+                        <th scope="col" class="text-center">Time</th>
+                    </tr>
+                    </thead>
+                    <tbody class="purchase-list">
+
+                    {% for return in returns %}
+
+                        <tr>
+
+                            <td scope="row">{{ return.purchase.buyer.username }}</td>
+                            <td class="text-center">
+                                <img src="{% static return.path_for_static %}" alt="no image">
+                            </td>
+                            <td>{{ return.purchase.product.name }}</td>
+                            <td class="text-center">{{ return.purchase.count }}</td>
+                            <td class="text-center">{{ return.purchase.product.price }}</td>
+                            <td class="text-center">{{ return.total }}</td>
+                            <td class="text-center">{{ return.purchase.time|date:"d.m.Y" }}</td>
+                            <td class="text-center">{{ return.purchase.time|date:"H:i:s" }}</td>
+
+
+                        </tr>
+
+                    {% empty %}
+                        <tr>
+                            <td>no returns</td>
+                        </tr>
+                    {% endfor %}
+
+                </table>
+
+
+            </div>
+
+            {% include 'shop/page_item/paginator.html' %}
+
+        </div>
+
+    {% endif %}
+
+
+
+
+{% endblock content %}
