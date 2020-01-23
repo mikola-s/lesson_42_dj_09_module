@@ -12,6 +12,16 @@ from . import models
 from . import forms
 
 
+class DynamicSuccessUrlMixin:
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        post = self.request.POST.get('success_url')
+        get = self.request.GET.get('success_url')
+        success_url = post if post else get
+        return success_url if success_url else url
+
+
 class IndexView(ListView):
     template_name = 'shop/product/index.html'
     model = models.Product
@@ -20,14 +30,7 @@ class IndexView(ListView):
     paginate_by = 8
     ordering = 'price'
 
-    # def dispatch(self, request, *args, **kwargs):
-    #    # for debug
-    #     data = super().dispatch(request, *args, **kwargs)
-    #     return data
-    #
-
-    # def get_context_data(self, **kwargs):
-    #     # for debug
+    # def get_context_data(self, **kwargs): # todo for debug (delete)
     #     context = super().get_context_data(**kwargs)
     #     context.update({'purchase_create_form': forms.PurchaseCreateForm})
     #     return context
@@ -67,7 +70,7 @@ class ProductCreate(SuccessMessageMixin, CreateView):
     success_message = 'success crate product %(name)s'
 
 
-class ProductUpdate(SuccessMessageMixin, UpdateView):
+class ProductUpdate(DynamicSuccessUrlMixin, SuccessMessageMixin, UpdateView):
     template_name = 'shop/product/update_form.html'
     form_class = forms.ProductCreateForm
     model = models.Product
@@ -76,13 +79,8 @@ class ProductUpdate(SuccessMessageMixin, UpdateView):
 
     # todo: прописать картинки
 
-    def get_success_url(self):
-        url = super().get_success_url()
-        success_url = self.request.POST.get('success_url')
-        return success_url if success_url else url
 
-
-class PurchaseCreate(SuccessMessageMixin, CreateView):
+class PurchaseCreate(DynamicSuccessUrlMixin, SuccessMessageMixin, CreateView):
     template_name = 'shop/purchase/create.html'
     form_class = forms.PurchaseCreateForm
     model = models.Purchase
@@ -95,11 +93,6 @@ class PurchaseCreate(SuccessMessageMixin, CreateView):
         form_add.product_id = self.kwargs['pk']
         form.cleaned_data.update({'product': form.instance.product.name})
         return super().form_valid(form)
-
-    def get_success_url(self):
-        url = super().get_success_url()
-        success_url = self.request.POST.get('success_url')
-        return success_url if success_url else url
 
 
 class PurchaseList(ListView):
@@ -127,34 +120,27 @@ class PurchaseList(ListView):
         return context
 
 
-class PurchaseDelete(SuccessMessageMixin, DeleteView):
+class PurchaseDelete(SuccessMessageMixin, DeleteView):  # return accept
     model = models.Purchase
     template_name = 'shop/purchase/delete.html'
-    success_url = '/'
-    success_message = 'success confirm return %(return)s'
+    success_url = '/return_list/'
+    # queryset = model.objects.filter(product__price=) # todo for debug (delete)
+    success_message = 'accept return product %()s'
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, self.success_message)
+        return super().delete(request, *args, **kwargs)
 
 
-class ReturnCreate(SuccessMessageMixin, CreateView):
+class ReturnCreate(DynamicSuccessUrlMixin, SuccessMessageMixin, CreateView):
     template_name = 'shop/return/create.html'
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
     success_message = 'success create return request %(purchase)s '
 
-    def form_valid(self, form):  # for debug
-        # form_add = form.save(commit=False)
-        # form_add.buyer_id = self.request.user.pk
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        url = super().get_success_url()
-        success_url = self.request.POST.get('success_url')
-        return success_url if success_url else url
-
-    # def form_valid(self, form):
-    #     form_add = form.save(commit=False)
-    #     form_add.buyer_id = self.request.user.pk
-    #     form_add.product_id = self.kwargs['pk']
-    #     form.cleaned_data.update({'product': form.instance.product.name})
+    # def form_valid(self, form):  # todo for debug (delete)
+    #     # form_add = form.save(commit=False)
+    #     # form_add.buyer_id = self.request.user.pk
     #     return super().form_valid(form)
 
 
@@ -165,7 +151,8 @@ class ReturnList(ListView):
     paginate_by = 6
     ordering = 'time'
     page_kwarg = 'page'
-    # queryset = model.objects.filter(purchase__product__price=)
+
+    # queryset = model.objects.filter(purchase__product__price=) # todo for debug (delete)
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -182,5 +169,16 @@ class ReturnList(ListView):
         return context
 
 
-class ReturnDelete(SuccessMessageMixin, DeleteView):
-    pass
+class ReturnDelete(SuccessMessageMixin, DeleteView):  # return reject
+    model = models.Return
+    template_name = 'shop/return/delete.html'
+    success_url = '/return_list/'
+    success_message = 'reject return product'
+
+    # queryset = models.Return.objects.filter(purchase__product__name=) #
+
+    def delete(self, request, *args, **kwargs):
+        qs = models.Return.objects.get(pk=kwargs['pk']).purchase.product.name
+        self.success_message = f'product {qs} return'
+        messages.success(self.request, self.success_message)
+        return super().delete(request, *args, **kwargs)

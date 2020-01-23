@@ -17,8 +17,6 @@
 
             <div class="card-group mx-0 px-0">
 
-                {#            ---------------------------------------------------------------------------#}
-
 
                 <table class="table table-hover">
                     <thead class="thead-light">
@@ -47,8 +45,14 @@
                             <td class="text-center">{{ return.purchase.count }}</td>
                             <td class="text-center">{{ return.purchase.product.price }}</td>
                             <td class="text-center">{{ return.total }}</td>
-                            <td class="text-center">{{ return.purchase.time|date:"d.m.Y" }}</td>
-                            <td class="text-center">{{ return.purchase.time|date:"H:i:s" }}</td>
+                            <td class="text-center">
+                                {{ return.purchase.time|date:"d.m.Y" }}
+                                {% include 'shop/purchase/delete_form.html' %}
+                            </td>
+                            <td class="text-center">
+                                {{ return.purchase.time|date:"H:i:s" }}
+                                {% include 'shop/return/delete_form.html' %}
+                            </td>
 
 
                         </tr>

@@ -16,7 +16,6 @@
 
 
             <form method="post" enctype="multipart/form-data" class="form">
-
                 {% csrf_token %}
 
                 <div class="form-group mx-0 mb-0">
@@ -29,10 +28,6 @@
                 <div class="form-group mb-0">
                     {{ form.price|as_crispy_field }}
                 </div>
-
-                {#                    {{ form.photo }}#}
-
-
                 <br>
                 <div class="form-group">
 

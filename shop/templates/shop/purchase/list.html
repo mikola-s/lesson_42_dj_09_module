@@ -38,7 +38,7 @@
 
                         <tr>
                             <td scope="row" class="text-center">
-                                <img src="{% static purchase.image_path_for_static %}" alt="no image">
+                                <img src="/{{ purchase.product.photo.url }}" alt="no image">
                             </td>
                             <td class="text-center">
                                 {{ purchase.product.name }}

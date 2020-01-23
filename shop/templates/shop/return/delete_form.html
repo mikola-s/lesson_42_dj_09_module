@@ -1,0 +1,7 @@
+<form action="{% url 'shop:return_delete' return.pk %}" method="post" class="mt-3">
+    {% csrf_token %}
+    {% include 'shop/page_item/success_url.html' %}
+    <button type="submit" class="nav-link btn btn-outline-danger mx-auto">
+        Reject
+    </button>
+</form>
