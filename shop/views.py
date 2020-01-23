@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.views import LoginView, TemplateView, LogoutView, FormView
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views import View
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
@@ -12,7 +13,7 @@ from . import models
 from . import forms
 
 
-class DynamicSuccessUrlMixin:
+class DynamicSuccessUrlMixin(View):
 
     def get_success_url(self):
         url = super().get_success_url()
@@ -124,8 +125,8 @@ class PurchaseDelete(SuccessMessageMixin, DeleteView):  # return accept
     model = models.Purchase
     template_name = 'shop/purchase/delete.html'
     success_url = '/return_list/'
-    # queryset = model.objects.filter(product__price=) # todo for debug (delete)
     success_message = 'accept return product %()s'
+    # queryset = model.objects.filter(product__price=) # todo for debug (delete)
 
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, self.success_message)
