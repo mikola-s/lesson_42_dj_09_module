@@ -1,46 +1,49 @@
-{% extends 'shop/base.html' %}
+{% extends 'shop/page_item/base.html' %}
 {% load staticfiles %}
+{% load static %}
 {% load crispy_forms_tags %}
+
+
 
 {% block content %}
 
     <div class="col-md-8 col-sm-8 col-12 col box">
-        <div class="mx-auto">
 
-            {% include 'shop/messages.html' %}
 
-            <form method="post" enctype="multipart/form-data" class="form col-6 mx-auto">
+        <div class="col-6 mx-auto">
+
+            {% include 'shop/page_item/messages.html' %}
+
+
+            <form method="post" enctype="multipart/form-data" class="form">
+
                 {% csrf_token %}
 
                 <div class="form-group mx-0 mb-0">
                     {{ form.name|as_crispy_field }}
                 </div>
                 <div class="form-group mx-0">
-
-                    <label for="id_description" class="requiredField">
-                        Description<span class="asteriskField">*</span>
-                    </label>
-                    <input type="text"
-                           name="description"
-                           maxlength="256"
-                           class="textinput textInput form-control"
-                           required="" id="id_description"
-                           value="{% lorem 6 w random %}">
+                    {{ form.description|as_crispy_field }}
                 </div>
 
                 <div class="form-group mb-0">
                     {{ form.price|as_crispy_field }}
                 </div>
 
+                {#                    {{ form.photo }}#}
+
+
+                <br>
                 <div class="form-group">
 
-                    <label for="id_photo" class=" requiredField">
+                    <label for="id_photo" class="requiredField">
                         Photo<span class="asteriskField">*</span>
                     </label>
                     <div class="custom-file">
                         <input type="file" name="photo" class="custom-file-input" id="id_photo"
                                aria-describedby="inputGroupFileAddon01">
-                        <label class="custom-file-label" for="id_photo" id="id_label">Choose file</label>
+                        <label class="custom-file-label" for="id_photo"
+                               id="id_label">{{ product.photo.name }}</label>
 
                     </div>
 
@@ -61,7 +64,7 @@
 
 
                 <div class="text-right">
-                    <button type="submit" class="btn btn-primary">Create</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
                 </div>
 
 
@@ -73,7 +76,7 @@
         <script src="{% static 'js/jquery-3.4.1.js' %}"></script>
         <script src="{% static 'js/bootstrap.js' %}"></script>
         <script src="{% static 'js/script.js' %}"></script>
-        <script src="{% static 'js/product_create.js' %}"></script>
+        <script src="{% static 'js/product_update.js' %}"></script>
     {% endblock script %}
 
 {% endblock content %}

@@ -1,11 +1,12 @@
-{% extends 'shop/base.html' %}
+{% extends 'shop/page_item/base.html' %}
 
 {% load crispy_forms_tags %}
 
 {% block content %}
+
     <div class="col-md-8 col-sm-8 col-12 col box">
 
-        {% include 'shop/messages.html' %}
+        {% include 'shop/page_item/messages.html' %}
 
         <form method="post" class="form col-md-6 col-sm-6 col-12 mx-auto">
 
@@ -13,8 +14,9 @@
             {{ form|crispy }}
 
             <div class="text-right">
-                <button type="submit" class="btn btn-primary">Confirm</button>
+                <button type="submit" class="btn btn-primary">Log in</button>
             </div>
+
         </form>
     </div>
 

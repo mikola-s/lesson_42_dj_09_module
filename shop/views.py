@@ -6,23 +6,24 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.views.generic import FormView
+from django.db.models import Sum, F, Func, Value
 
 from . import models
 from . import forms
 
 
 class IndexView(ListView):
-    template_name = 'shop/index.html'
+    template_name = 'shop/page_item/templates/shop/product/index.html'
     model = models.Product
     queryset = model.objects.all()
     context_object_name = 'products'
     paginate_by = 8
     ordering = 'price'
 
-    def dispatch(self, request, *args, **kwargs):
-       # for debug
-        data = super().dispatch(request, *args, **kwargs)
-        return data
+    # def dispatch(self, request, *args, **kwargs):
+    #    # for debug
+    #     data = super().dispatch(request, *args, **kwargs)
+    #     return data
     #
 
     # def get_context_data(self, **kwargs):
@@ -33,7 +34,7 @@ class IndexView(ListView):
 
 
 class UserCreate(SuccessMessageMixin, CreateView):
-    template_name = 'shop/user_create.html'
+    template_name = 'shop/user/user_create.html'
     form_class = UserCreationForm
     success_url = '/'
 
@@ -47,57 +48,42 @@ class UserCreate(SuccessMessageMixin, CreateView):
 
 
 class UserLogin(SuccessMessageMixin, LoginView):
-    template_name = 'shop/user_login.html'
+    template_name = 'shop/user/user_login.html'
     success_url = '/'
     success_message = '%(username)s logged in successfully'
 
 
 class UserLogout(SuccessMessageMixin, LogoutView):
-    template_name = 'shop/user_logout.html'
+    template_name = 'shop/user/user_logout.html'
     next_page = '/'
     success_message = 'success logout'
 
 
 class ProductCreate(SuccessMessageMixin, CreateView):
-    template_name = 'shop/product_create_form.html'
+    template_name = 'shop/product/create_form.html'
     form_class = forms.ProductCreateForm
     model = models.Product
     success_url = '/product_create/'
     success_message = 'success crate product %(name)s'
 
 
-class ProductUpdate(UpdateView, SuccessMessageMixin):
-    template_name = 'shop/product_update_form.html'
+class ProductUpdate(SuccessMessageMixin, UpdateView):
+    template_name = 'shop/product/update_form.html'
     form_class = forms.ProductCreateForm
     model = models.Product
     success_url = '/'
     success_message = 'success update product %(name)s'
 
-    # def form_valid(self, form):
-    #     # for debug
-    #     self.get_success_message()
-    #     data = super().form_valid(form)
-    #     return data
-
-    # def form_invalid(self, form):
-    #     # for debug
-    #     data = super().form_invalid(form)
-    #     return data
+    # todo: прописать картинки
 
     def get_success_url(self):
         url = super().get_success_url()
         success_url = self.request.POST.get('success_url')
         return success_url if success_url else url
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({"image_src_1": 'image/alt.svg'})
-        context.update({"image_src_2": '/static/image/alt.svg'})
-        return context
-
 
 class PurchaseCreate(SuccessMessageMixin, CreateView):
-    template_name = 'shop/purchase_create.html'
+    template_name = 'shop/purchase/create.html'
     form_class = forms.PurchaseCreateForm
     model = models.Purchase
     success_url = '/'
@@ -114,3 +100,44 @@ class PurchaseCreate(SuccessMessageMixin, CreateView):
         url = super().get_success_url()
         success_url = self.request.POST.get('success_url')
         return success_url if success_url else url
+
+
+class PurchaseList(ListView):
+    template_name = 'shop/purchase/list.html'
+    model = models.Purchase
+    context_object_name = 'purchases'
+    paginate_by = 6
+    ordering = '-time'
+    page_kwarg = 'page'
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.get_queryset()
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = qs.filter(buyer_id=self.request.user.pk)
+        qs = qs.annotate(total=F('count') * F('product__price'))
+        qs = qs.annotate(image_path_for_static=Func(F('product__photo'), Value(8), function='substr'))
+        return qs
+
+    # def get_context_data(self, *, object_list=None, **kwargs):
+    #     # for debug
+    #     data = super().get_context_data(object_list=None, **kwargs)
+    #     return data
+
+
+class PurchaseDelete(SuccessMessageMixin, DeleteView):
+    pass
+
+
+class ReturnCreate(SuccessMessageMixin, CreateView):
+    pass
+
+
+class ReturnList(ListView):
+    pass
+
+
+class ReturnDelete(SuccessMessageMixin, DeleteView):
+    pass

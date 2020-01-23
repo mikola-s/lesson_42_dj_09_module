@@ -1,6 +1,6 @@
 from django.urls import path, include
 from .views import IndexView, UserCreate, UserLogin, UserLogout, ProductCreate, ProductUpdate
-from .views import PurchaseCreate
+from .views import PurchaseCreate, PurchaseList
 
 app_name = 'shop'
 
@@ -12,5 +12,6 @@ urlpatterns = [
     path('product_create/', ProductCreate.as_view(), name='product_create'),
     path('product_update/<int:pk>/', ProductUpdate.as_view(), name='product_update'),
     path('purchase_create/<int:pk>/', PurchaseCreate.as_view(), name='purchase_create'),
+    path('purchase_list/', PurchaseList.as_view(), name='purchase_list'),
 ]
 

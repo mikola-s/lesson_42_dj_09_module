@@ -1,4 +1,4 @@
-{% extends 'shop/base.html' %}
+{% extends 'shop/page_item/base.html' %}
 {#{% load crispy_forms_tags %}#}
 {% load staticfiles %}
 
@@ -16,7 +16,7 @@
         {% endif %}
 
 
-        {% include 'shop/messages.html' %}
+        {% include 'shop/page_item/messages.html' %}
 
         <h2>Catalog of product</h2>
 
@@ -24,7 +24,7 @@
 
             {% for product in products %}
 
-                {% include 'shop/product_card.html' %}
+                {% include 'shop/page_item/card.html' %}
 
                 {% if forloop.counter|divisibleby:"4" %}
                     <div class="w-100"></div>
@@ -35,7 +35,7 @@
 
         </div>
 
-        {% include 'shop/paginator.html' %}
+        {% include 'shop/page_item/paginator.html' %}
 
     </div>
 
