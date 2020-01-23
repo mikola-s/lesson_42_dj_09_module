@@ -1,0 +1,9 @@
+<div class="mx-auto mt-1">
+    <form action="{% url 'shop:return_create' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="purchase" value="{{ purchase.pk }}">
+        <button type="submit" class="nav-link btn btn-outline-info mx-auto">
+            Return product
+        </button>
+    </form>
+</div>

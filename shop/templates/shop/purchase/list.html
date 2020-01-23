@@ -42,14 +42,7 @@
                             </td>
                             <td class="text-center">
                                 {{ purchase.product.name }}
-                                <div class="mx-auto mt-1">
-                                    <form action="{% url 'shop:return_create' %}">
-                                        <button type="submit" class="nav-link btn btn-outline-info mx-auto">
-                                            Return
-                                            product
-                                        </button>
-                                    </form>
-                                </div>
+                                {% include 'shop/return/create_form.html' %}
                             </td>
                             <td>{{ purchase.product.price }}</td>
                             <td>{{ purchase.count }}</td>

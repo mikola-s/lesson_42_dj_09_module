@@ -123,7 +123,7 @@ class PurchaseList(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=None, **kwargs)
-        context = context.update({'return_create': forms.ReturnCreateForm})
+        context.update({'return_create': forms.ReturnCreateForm})
         return context
 
 
@@ -136,6 +136,18 @@ class ReturnCreate(SuccessMessageMixin, CreateView):
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
     success_message = 'success create return request %(purchase)s '
+
+    def form_valid(self, form):
+        # form_add = form.save(commit=False)
+        # form_add.buyer_id = self.request.user.pk
+        return super().form_valid(form)
+
+    # def form_valid(self, form):
+    #     form_add = form.save(commit=False)
+    #     form_add.buyer_id = self.request.user.pk
+    #     form_add.product_id = self.kwargs['pk']
+    #     form.cleaned_data.update({'product': form.instance.product.name})
+    #     return super().form_valid(form)
 
 
 class ReturnList(ListView):
