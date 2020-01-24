@@ -39,12 +39,14 @@
 
                             <td scope="row">{{ return.purchase.buyer.username }}</td>
                             <td class="text-center">
-                                <img src="{% static return.path_for_static %}" alt="no image">
+                                <img src="{{ MEDIA_URL }}{{ return.purchase.product.photo }}" alt="no image"
+                                    onerror="if (this.src != 'static/images/alt.svg') this.src = '{% static "images/alt.svg" %}'"
+                                >
                             </td>
                             <td>{{ return.purchase.product.name }}</td>
                             <td class="text-center">{{ return.purchase.count }}</td>
-                            <td class="text-center">{{ return.purchase.product.price }}</td>
-                            <td class="text-center">{{ return.total }}</td>
+                            <td class="text-center">{{ return.purchase.product.price|floatformat:'-2' }}</td>
+                            <td class="text-center">{{ return.total|floatformat:'-2' }}</td>
                             <td class="text-center">
                                 {{ return.purchase.time|date:"d.m.Y" }}
                                 {% include 'shop/purchase/delete_form.html' %}
@@ -53,8 +55,6 @@
                                 {{ return.purchase.time|date:"H:i:s" }}
                                 {% include 'shop/return/delete_form.html' %}
                             </td>
-
-
                         </tr>
 
                     {% empty %}
@@ -64,8 +64,6 @@
                     {% endfor %}
 
                 </table>
-
-
             </div>
 
             {% include 'shop/page_item/paginator.html' %}

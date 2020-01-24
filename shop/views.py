@@ -7,7 +7,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.views.generic import FormView
-from django.db.models import Sum, F, Func, Value
+from django.db.models import ExpressionWrapper, Sum, F, Func, Value, DecimalField
 
 from . import models
 from . import forms
@@ -86,7 +86,7 @@ class PurchaseCreate(DynamicSuccessUrlMixin, SuccessMessageMixin, CreateView):
     form_class = forms.PurchaseCreateForm
     model = models.Purchase
     success_url = '/'
-    success_message = 'successfully bought %(count)s %(product)s'
+    success_message = 'successfully buy -- %(count)s %(product)s'
 
     def form_valid(self, form):
         form_add = form.save(commit=False)
@@ -111,8 +111,8 @@ class PurchaseList(ListView):
     def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.filter(buyer_id=self.request.user.pk)
-        qs = qs.annotate(total=F('count') * F('product__price'))
-        qs = qs.annotate(path_for_static=Func(F('product__photo'), Value(8), function='substr'))
+        qs = qs.annotate(total=ExpressionWrapper(
+            F('count') * F('product__price'), output_field=DecimalField()))
         return qs
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -125,10 +125,15 @@ class PurchaseDelete(SuccessMessageMixin, DeleteView):  # return accept
     model = models.Purchase
     template_name = 'shop/purchase/delete.html'
     success_url = '/return_list/'
-    success_message = 'accept return product %()s'
+    success_message = 'return the product'
+
     # queryset = model.objects.filter(product__price=) # todo for debug (delete)
 
     def delete(self, request, *args, **kwargs):
+        qs = self.model.objects.get(pk=kwargs['pk'])
+        self.success_message = f'return {qs.count} {qs.name} confirmed'
+        messages.success(self.request, self.success_message)
+
         messages.success(self.request, self.success_message)
         return super().delete(request, *args, **kwargs)
 
@@ -161,8 +166,8 @@ class ReturnList(ListView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        qs = qs.annotate(total=F('purchase__count') * F('purchase__product__price'))
-        qs = qs.annotate(path_for_static=Func(F('purchase__product__photo'), Value(8), function='substr'))
+        qs = qs.annotate(total=ExpressionWrapper(
+            F('purchase__count') * F('purchase__product__price'), output_field=DecimalField()))
         return qs
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -174,12 +179,12 @@ class ReturnDelete(SuccessMessageMixin, DeleteView):  # return reject
     model = models.Return
     template_name = 'shop/return/delete.html'
     success_url = '/return_list/'
-    success_message = 'reject return product'
+    success_message = 'The product is left with the buyer'
 
     # queryset = models.Return.objects.filter(purchase__product__name=) #
 
     def delete(self, request, *args, **kwargs):
-        qs = models.Return.objects.get(pk=kwargs['pk']).purchase.product.name
-        self.success_message = f'product {qs} return'
+        qs = self.model.objects.get(pk=kwargs['pk']).purchase.product
+        self.success_message = f'{qs.count} {qs.name} left with the buyer'
         messages.success(self.request, self.success_message)
         return super().delete(request, *args, **kwargs)
