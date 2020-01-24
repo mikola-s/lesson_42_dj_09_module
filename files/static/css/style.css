@@ -99,3 +99,9 @@ em {
 .purchase-list td{
     font-size: 150%;
 }
+
+.button-box {
+    position: absolute;
+    top: 6%;
+    right: 3%;
+}

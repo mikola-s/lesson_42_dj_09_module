@@ -1,3 +1,6 @@
+from decimal import Decimal
+
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import localtime
@@ -7,7 +10,12 @@ from django.dispatch import receiver
 
 class Profile(models.Model):
     user = models.OneToOneField(to=User, on_delete=models.CASCADE, related_name='profile')
-    cash = models.PositiveIntegerField(default=10000)
+    cash = models.DecimalField(
+        decimal_places=2,
+        max_digits=12,
+        default=10000.00,
+        validators=[MinValueValidator(Decimal('0.01'))]
+    )
 
     def __str__(self):
         return self.user.username
@@ -27,8 +35,12 @@ def save_user_profile(sender, instance, **kwargs):
 class Product(models.Model):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=256)
-    price = models.PositiveIntegerField()
-    photo = models.FileField(upload_to='static/images/')
+    price = models.DecimalField(
+        decimal_places=2,
+        max_digits=12,
+        validators=[MinValueValidator(Decimal('0.01'))]
+    )
+    photo = models.FileField(upload_to='shop/product_image/')
     count = models.PositiveIntegerField()
 
     def __str__(self):

@@ -132,32 +132,22 @@ USE_TZ = True
 
 """ files settings """
 
-_PATH = os.path.abspath(os.path.dirname(__file__))
+# _PATH = os.path.abspath(os.path.dirname(__file__))
 
-MEDIA_ROOT = os.path.join(_PATH, 'files', 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'files', 'media')
 MEDIA_URL = '/media/'
 
-STATIC_ROOT = os.path.join(_PATH, 'files', 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'files', 'asset')
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
-    os.path.join(_PATH, 'static'),
+    os.path.join(BASE_DIR, 'files', 'static'),
 )
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
-ADMIN_MEDIA_PREFIX = '/static/admin/'
-
-
-
-
-
 LOGIN_REDIRECT_URL = '/'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
-
-
-
-
-
