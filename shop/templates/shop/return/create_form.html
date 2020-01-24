@@ -3,8 +3,17 @@
         {% csrf_token %}
         {% include 'shop/page_item/success_url.html' %}
         <input type="hidden" name="purchase" value="{{ purchase.pk }}">
-        <button type="submit" class="nav-link btn btn-outline-info mx-auto">
-            Return product
-        </button>
-    </form>
+
+{% if form.errors|length == 1 %}
+    <p class="invalid-feedback"><strong>{{ form.errors|striptags }}</strong></p>
+{% elif form.errors|length > 1 %}
+    {% for error in form.errors %}
+        <p class="invalid-feedback"><strong>{{ error|striptags }}</strong></p>
+    {% endfor %}
+{% endif %}
+
+<button type="submit" class="nav-link btn btn-outline-info mx-auto">
+    Return product
+</button>
+</form>
 </div>

@@ -55,7 +55,7 @@ class Purchase(models.Model):
 
     def __str__(self):
         time = localtime(self.time).strftime("%Y-%m-%d %H:%M:%S")
-        return f"{self.buyer.username} / ({self.count}) {self.product.name} -- {time}"
+        return f"{self.buyer.username} BUY {self.product.name} ({self.count}) IN {time}"
 
 
 class Return(models.Model):

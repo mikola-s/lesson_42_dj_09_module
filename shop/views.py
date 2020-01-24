@@ -1,13 +1,15 @@
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.views import LoginView, TemplateView, LogoutView, FormView
 from django.views.generic.list import ListView
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormMixin
 from django.views import View
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.views.generic import FormView
 from django.db.models import ExpressionWrapper, Sum, F, Func, Value, DecimalField
+from django.urls import reverse_lazy, reverse
 
 from . import models
 from . import forms
@@ -96,6 +98,35 @@ class PurchaseCreate(DynamicSuccessUrlMixin, SuccessMessageMixin, CreateView):
         return super().form_valid(form)
 
 
+class PurchaseListWithMixin(FormMixin, ListView):
+    template_name = 'shop/purchase/list_with_mixin.html'
+    model = models.Purchase
+    context_object_name = 'purchases'
+    paginate_by = 6
+    ordering = '-time'
+    page_kwarg = 'page'
+    form_class = forms.ReturnCreateForm
+    success_url = '/purchase_list_with_mixin/'
+
+
+class ReturnCreateWithMixin(SuccessMessageMixin, CreateView):
+    template_name = 'shop/return/create.html'
+    form_class = forms.ReturnCreateForm
+    success_url = '/purchase_list_with_mixin/'
+    success_message = 'You send return form'
+
+    def get_success_message(self, cleaned_data):
+        purchase = cleaned_data.get('purchase')
+        if purchase:
+            self.success_message = f'You have return: {purchase.product.name} ' \
+                                   f'({purchase.count}) bought: {purchase.time}'
+        return self.success_message
+
+    def form_invalid(self, form):
+        messages.add_message(self.request, messages.WARNING, "The form has already been submitted")
+        return redirect(reverse_lazy('shop:purchase_list_with_mixin'))
+
+
 class PurchaseList(ListView):
     template_name = 'shop/purchase/list.html'
     model = models.Purchase
@@ -103,6 +134,9 @@ class PurchaseList(ListView):
     paginate_by = 6
     ordering = '-time'
     page_kwarg = 'page'
+
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -117,7 +151,7 @@ class PurchaseList(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=None, **kwargs)
-        context.update({'return_create': forms.ReturnCreateForm})
+        context.update({'form': forms.ReturnCreateForm})
         return context
 
 
@@ -138,16 +172,23 @@ class PurchaseDelete(SuccessMessageMixin, DeleteView):  # return accept
         return super().delete(request, *args, **kwargs)
 
 
-class ReturnCreate(DynamicSuccessUrlMixin, SuccessMessageMixin, CreateView):
+class ReturnCreate(SuccessMessageMixin, CreateView):
     template_name = 'shop/return/create.html'
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
-    success_message = 'success create return request %(purchase)s '
+    success_message = 'You have return %(purchase)s '
 
-    # def form_valid(self, form):  # todo for debug (delete)
-    #     # form_add = form.save(commit=False)
-    #     # form_add.buyer_id = self.request.user.pk
-    #     return super().form_valid(form)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):  # todo for debug (delete)
+        # form_add = form.save(commit=False)
+        # form_add.buyer_id = self.request.user.pk
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.add_message(self.request, messages.WARNING, "Request has already been sent")
+        return redirect(reverse_lazy('shop:purchase_list'))
 
 
 class ReturnList(ListView):

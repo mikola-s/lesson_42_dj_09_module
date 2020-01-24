@@ -1,0 +1,13 @@
+<div class="mx-auto mt-1">
+    <form action="{% url 'shop:return_create_with_mixin' %}" method="post">
+        {% csrf_token %}
+
+        {% include 'shop/page_item/success_url.html' %}
+        <input type="hidden" name="purchase" value="{{ purchase.pk }}">
+
+
+<button type="submit" class="nav-link btn btn-outline-info mx-auto">
+    Return product
+</button>
+</form>
+</div>
