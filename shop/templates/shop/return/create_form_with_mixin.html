@@ -5,9 +5,11 @@
         {% include 'shop/page_item/success_url.html' %}
         <input type="hidden" name="purchase" value="{{ purchase.pk }}">
 
+        {% if not purchase.post_time %}
+            <button type="submit" class="nav-link btn btn-outline-info mx-auto">
+                Return product
+            </button>
+        {% endif %}
 
-<button type="submit" class="nav-link btn btn-outline-info mx-auto">
-    Return product
-</button>
-</form>
+    </form>
 </div>

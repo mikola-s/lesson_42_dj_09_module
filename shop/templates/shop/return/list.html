@@ -48,11 +48,11 @@
                             <td class="text-center">{{ return.purchase.product.price|floatformat:'-2' }}</td>
                             <td class="text-center">{{ return.total|floatformat:'-2' }}</td>
                             <td class="text-center">
-                                {{ return.purchase.time|date:"d.m.Y" }}
+                                {{ return.purchase.post_time|date:"d.m.Y" }}
                                 {% include 'shop/purchase/delete_form.html' %}
                             </td>
                             <td class="text-center">
-                                {{ return.purchase.time|date:"H:i:s" }}
+                                {{ return.purchase.post_time|date:"H:i:s" }}
                                 {% include 'shop/return/delete_form.html' %}
                             </td>
                         </tr>
@@ -71,8 +71,5 @@
         </div>
 
     {% endif %}
-
-
-
 
 {% endblock content %}

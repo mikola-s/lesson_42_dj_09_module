@@ -60,4 +60,4 @@ class Purchase(models.Model):
 
 class Return(models.Model):
     purchase = models.OneToOneField(to=Purchase, on_delete=models.CASCADE, primary_key=True, related_name='purchase')
-    time = models.DateTimeField(auto_now_add=True)
+    post_time = models.DateTimeField(auto_now_add=True)

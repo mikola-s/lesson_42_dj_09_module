@@ -108,6 +108,15 @@ class PurchaseListWithMixin(FormMixin, ListView):
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list_with_mixin/'
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = qs.annotate(post_time=F('purchase__post_time'))
+        return qs
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     qs = self.model.objects.filter(pos)
+
 
 class ReturnCreateWithMixin(SuccessMessageMixin, CreateView):
     template_name = 'shop/return/create.html'
@@ -164,10 +173,8 @@ class PurchaseDelete(SuccessMessageMixin, DeleteView):  # return accept
     # queryset = model.objects.filter(product__price=) # todo for debug (delete)
 
     def delete(self, request, *args, **kwargs):
-        qs = self.model.objects.get(pk=kwargs['pk'])
+        qs = self.model.objects.get(pk=kwargs['pk']).product
         self.success_message = f'return {qs.count} {qs.name} confirmed'
-        messages.success(self.request, self.success_message)
-
         messages.success(self.request, self.success_message)
         return super().delete(request, *args, **kwargs)
 
@@ -196,7 +203,7 @@ class ReturnList(ListView):
     model = models.Return
     context_object_name = 'returns'
     paginate_by = 6
-    ordering = 'time'
+    ordering = 'post_time'
     page_kwarg = 'page'
 
     # queryset = model.objects.filter(purchase__product__price=) # todo for debug (delete)
