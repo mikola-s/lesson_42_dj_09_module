@@ -46,6 +46,7 @@ class UserCreate(SuccessMessageMixin, CreateView):
     template_name = 'shop/user/user_create.html'
     form_class = UserCreationForm
     success_url = '/'
+    success_message = 'Create user %(username)s successful'
 
     def form_valid(self, form):
         data = super().form_valid(form)
@@ -65,7 +66,9 @@ class UserLogin(SuccessMessageMixin, LoginView):
 class UserLogout(SuccessMessageMixin, LogoutView):
     template_name = 'shop/user/user_logout.html'
     next_page = '/'
-    success_message = 'success logout'
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(kwargs)
 
 
 class ProductCreate(SuccessMessageMixin, CreateView):
@@ -109,7 +112,7 @@ class PurchaseCreate(CreateView):
             error_check = True
             messages.add_message(self.request, messages.WARNING,
                                  f'You don’t have enough money to buy {product.name} '
-                                 f'({ordered_product}). {total_cost} needed')
+                                 f'({ordered_product}). {total_cost} ₴ needed')
 
         return {'error_check': error_check,
                 'total_cost': total_cost,
@@ -140,19 +143,21 @@ class PurchaseCreate(CreateView):
             return super().form_valid(form)
 
 
-class PurchaseListWithMixin(FormMixin, ListView):
-    template_name = 'shop/purchase/list_with_mixin.html'
+class PurchaseList(FormMixin, ListView):
+    template_name = 'shop/purchase/list.html'
     model = models.Purchase
     context_object_name = 'purchases'
     paginate_by = 6
     ordering = '-time'
     page_kwarg = 'page'
     form_class = forms.ReturnCreateForm
-    success_url = '/purchase_list_with_mixin/'
+    success_url = '/purchase_list/'
 
     def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.annotate(post_time=F('purchase__post_time'))
+        qs = qs.annotate(total=ExpressionWrapper(
+            F('count') * F('product__price'), output_field=DecimalField()))
         return qs
 
     # def get_context_data(self, **kwargs):
@@ -160,50 +165,21 @@ class PurchaseListWithMixin(FormMixin, ListView):
     #     qs = self.model.objects.filter(pos)
 
 
-class ReturnCreateWithMixin(CreateView):
+class ReturnCreate(CreateView):
     template_name = 'shop/return/create.html'
     form_class = forms.ReturnCreateForm
-    success_url = '/purchase_list_with_mixin/'
-    success_message = 'You send return form'
+    success_url = '/purchase_list/'
 
-    def get_success_message(self, cleaned_data):
-        purchase = cleaned_data.get('purchase')
-        if purchase:
-            self.success_message = f'You have return: {purchase.product.name} ' \
-                                   f'({purchase.count}) bought: {purchase.time}'
-        return self.success_message
+    def form_valid(self, form):
+        purchase = form.cleaned_data["purchase"]
+        messages.add_message(self.request, messages.SUCCESS,
+                             f'You have return: {purchase.product.name} ({purchase.count}) '
+                             f'buy: {purchase.time.strftime("%Y-%m-%d %H:%M:%S")}')
+        return redirect(reverse_lazy('shop:purchase_list'))
 
     def form_invalid(self, form):
         messages.add_message(self.request, messages.WARNING, "The form has already been submitted")
-        return redirect(reverse_lazy('shop:purchase_list_with_mixin'))
-
-
-class PurchaseList(ListView):
-    template_name = 'shop/purchase/list.html'
-    model = models.Purchase
-    context_object_name = 'purchases'
-    paginate_by = 6
-    ordering = '-time'
-    page_kwarg = 'page'
-
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.get_queryset()
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        qs = qs.filter(buyer_id=self.request.user.pk)
-        qs = qs.annotate(total=ExpressionWrapper(
-            F('count') * F('product__price'), output_field=DecimalField()))
-        return qs
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(object_list=None, **kwargs)
-        context.update({'form': forms.ReturnCreateForm})
-        return context
+        return redirect(reverse_lazy('shop:purchase_list'))
 
 
 class PurchaseDelete(SuccessMessageMixin, DeleteView):  # return accept
@@ -219,25 +195,6 @@ class PurchaseDelete(SuccessMessageMixin, DeleteView):  # return accept
         self.success_message = f'return {qs.count} {qs.name} confirmed'
         messages.success(self.request, self.success_message)
         return super().delete(request, *args, **kwargs)
-
-
-class ReturnCreate(SuccessMessageMixin, CreateView):
-    template_name = 'shop/return/create.html'
-    form_class = forms.ReturnCreateForm
-    success_url = '/purchase_list/'
-    success_message = 'You have return %(purchase)s '
-
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):  # todo for debug (delete)
-        # form_add = form.save(commit=False)
-        # form_add.buyer_id = self.request.user.pk
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.add_message(self.request, messages.WARNING, "Request has already been sent")
-        return redirect(reverse_lazy('shop:purchase_list'))
 
 
 class ReturnList(ListView):
