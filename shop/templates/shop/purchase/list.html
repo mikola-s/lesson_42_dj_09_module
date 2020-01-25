@@ -6,6 +6,8 @@
 
     {% if user.is_authenticated %}
 
+        {% include 'shop/page_item/you_cash.html' %}
+
         <div class="col-md-8 col-sm-8 col-12 col box">
 
             {% include 'shop/page_item/messages.html' %}
@@ -41,10 +43,11 @@
                                 {% include 'shop/return/create_form.html' %}
                             </td>
                             <td class="text-center">{{ purchase.count }}</td>
-                            <td class="text-center">{{ purchase.product.price|floatformat:"-2" }}</td>
-                            <td class="text-center">{{ purchase.total|floatformat:"-2" }}</td>
+                            <td class="text-center">{{ purchase.product.price|floatformat:"-2" }} ₴</td>
+                            <td class="text-center">{{ purchase.total|floatformat:"-2" }} ₴</td>
                             <td>{{ purchase.time|date:"d.m.Y" }}</td>
                             <td>{{ purchase.time|date:"H:i:s" }}</td>
+                            <td>{{ purchase.post_time }}</td>
                         </tr>
 
                     {% empty %}

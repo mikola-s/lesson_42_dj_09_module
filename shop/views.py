@@ -26,7 +26,16 @@ class DynamicSuccessUrlMixin(View):
         return success_url if success_url else url
 
 
-class IndexView(ListView):
+class YouCash:
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.pk is not None:
+            context.update({'cash': self.request.user.profile.cash})
+        return context
+
+
+class IndexView(YouCash, ListView):
     template_name = 'shop/product/index.html'
     model = models.Product
     queryset = model.objects.all()
@@ -37,8 +46,6 @@ class IndexView(ListView):
     def get_context_data(self, **kwargs):  # todo for debug (delete)
         context = super().get_context_data(**kwargs)
         context.update({'purchase_create_form': forms.PurchaseCreateForm})
-        if self.request.user.pk is not None:
-            context.update({'cash': self.request.user.profile.cash})
         return context
 
 
@@ -60,15 +67,17 @@ class UserCreate(SuccessMessageMixin, CreateView):
 class UserLogin(SuccessMessageMixin, LoginView):
     template_name = 'shop/user/user_login.html'
     success_url = '/'
-    success_message = '%(username)s logged in successfully'
+    success_message = '%(username)s login successfully'
 
 
-class UserLogout(SuccessMessageMixin, LogoutView):
+class UserLogout(LogoutView):
     template_name = 'shop/user/user_logout.html'
     next_page = '/'
 
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(kwargs)
+    def dispatch(self, request, *args, **kwargs):
+        messages.add_message(self.request, messages.SUCCESS,
+                             f'{self.request.user.username} logout successfully')
+        return super().dispatch(request, *args, **kwargs)
 
 
 class ProductCreate(SuccessMessageMixin, CreateView):
@@ -111,14 +120,14 @@ class PurchaseCreate(CreateView):
         if total_cost >= user.cash:
             error_check = True
             messages.add_message(self.request, messages.WARNING,
-                                 f'You don’t have enough money to buy {product.name} '
-                                 f'({ordered_product}). {total_cost} ₴ needed')
+                                 f'You need {total_cost.normalize()} ₴ for buy {product.name} ({ordered_product})')
 
         return {'error_check': error_check,
                 'total_cost': total_cost,
                 'user': user,
                 'product': product,
-                'ordered_product': ordered_product}
+                'ordered_product': ordered_product,
+                }
 
     def form_valid(self, form):
         valid_data = self.purchase_validator(form)
@@ -143,7 +152,7 @@ class PurchaseCreate(CreateView):
             return super().form_valid(form)
 
 
-class PurchaseList(FormMixin, ListView):
+class PurchaseList(YouCash, FormMixin, ListView):
     template_name = 'shop/purchase/list.html'
     model = models.Purchase
     context_object_name = 'purchases'
@@ -152,13 +161,27 @@ class PurchaseList(FormMixin, ListView):
     page_kwarg = 'page'
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
+    # qs = model.objects.filter(purchase__post_time=)
 
     def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.annotate(post_time=F('purchase__post_time'))
-        qs = qs.annotate(total=ExpressionWrapper(
-            F('count') * F('product__price'), output_field=DecimalField()))
+        # qs = qs.annotate(total=ExpressionWrapper(
+        #     F('count') * F('product__price'), output_field=DecimalField()))
         return qs
+
+
+class PurchaseDelete(DeleteView):  # return accept
+    model = models.Purchase
+    template_name = 'shop/purchase/delete.html'
+    success_url = '/return_list/'
+
+    def delete(self, request, *args, **kwargs):
+        qs = self.model.objects.get(pk=kwargs['pk'])
+        messages.add_message(self.request, messages.SUCCESS,
+                             f'Return in store {qs.product.name} ({qs.count}) confirmed. '
+                             f'Return {qs.buyer.username} {qs.count * qs.product.price} ₴')
+        return super().delete(request, *args, **kwargs)
 
 
 class ReturnCreate(CreateView):
@@ -171,26 +194,11 @@ class ReturnCreate(CreateView):
         messages.add_message(self.request, messages.SUCCESS,
                              f'You have return: {purchase.product.name} ({purchase.count}) '
                              f'buy: {purchase.time.strftime("%Y-%m-%d %H:%M:%S")}')
-        return redirect(reverse_lazy('shop:purchase_list'))
+        return super().form_valid(form)
 
     def form_invalid(self, form):
         messages.add_message(self.request, messages.WARNING, "The form has already been submitted")
         return redirect(reverse_lazy('shop:purchase_list'))
-
-
-class PurchaseDelete(SuccessMessageMixin, DeleteView):  # return accept
-    model = models.Purchase
-    template_name = 'shop/purchase/delete.html'
-    success_url = '/return_list/'
-    success_message = 'return the product'
-
-    # queryset = model.objects.filter(product__price=) # todo for debug (delete)
-
-    def delete(self, request, *args, **kwargs):
-        qs = self.model.objects.get(pk=kwargs['pk']).product
-        self.success_message = f'return {qs.count} {qs.name} confirmed'
-        messages.success(self.request, self.success_message)
-        return super().delete(request, *args, **kwargs)
 
 
 class ReturnList(ListView):
@@ -200,8 +208,6 @@ class ReturnList(ListView):
     paginate_by = 6
     ordering = 'post_time'
     page_kwarg = 'page'
-
-    # queryset = model.objects.filter(purchase__product__price=) # todo for debug (delete)
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
@@ -218,16 +224,13 @@ class ReturnList(ListView):
         return context
 
 
-class ReturnDelete(SuccessMessageMixin, DeleteView):  # return reject
+class ReturnDelete(DeleteView):  # return reject
     model = models.Return
     template_name = 'shop/return/delete.html'
     success_url = '/return_list/'
-    success_message = 'The product is left with the buyer'
-
-    # queryset = models.Return.objects.filter(purchase__product__name=) #
 
     def delete(self, request, *args, **kwargs):
-        qs = self.model.objects.get(pk=kwargs['pk']).purchase.product
-        self.success_message = f'{qs.count} {qs.name} left with the buyer'
-        messages.success(self.request, self.success_message)
+        qs = self.model.objects.get(pk=kwargs['pk']).purchase
+        messages.add_message(self.request, messages.SUCCESS,
+                             f'{qs.product.name} ({qs.count}) left with the buyer')
         return super().delete(request, *args, **kwargs)

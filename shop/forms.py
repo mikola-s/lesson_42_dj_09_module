@@ -18,4 +18,4 @@ class PurchaseCreateForm(ModelForm):
 class ReturnCreateForm(ModelForm):
     class Meta:
         model = Return
-        fields = ['purchase', ]
+        fields = []

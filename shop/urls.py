@@ -19,7 +19,7 @@ urlpatterns = [
     path('purchase_delete/<int:pk>/', PurchaseDelete.as_view(), name='purchase_delete'),
     path('return_list/', ReturnList.as_view(), name='return_list'),
     # path('return_create/', ReturnCreate.as_view(), name='return_create'),
-    path('return_create/', ReturnCreate.as_view(), name='return_create'), # todo try
+    path('return_create/<int:pk>/', ReturnCreate.as_view(), name='return_create'), # todo try
     path('return_delete/<int:pk>/', ReturnDelete.as_view(), name='return_delete'),
 ]
 
