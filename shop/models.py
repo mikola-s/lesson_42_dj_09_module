@@ -1,5 +1,4 @@
 from decimal import Decimal
-
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
@@ -9,7 +8,7 @@ from django.dispatch import receiver
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(to=User, on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(to=User, on_delete=models.CASCADE, related_name='profiles')
     cash = models.DecimalField(
         decimal_places=2,
         max_digits=12,
@@ -38,8 +37,7 @@ class Product(models.Model):
     price = models.DecimalField(
         decimal_places=2,
         max_digits=12,
-        validators=[MinValueValidator(Decimal('0.01'))]
-    )
+        validators=[MinValueValidator(Decimal('0.01'))])
     photo = models.FileField(upload_to='shop/product_image/')
     count = models.PositiveIntegerField()
 
@@ -49,7 +47,10 @@ class Product(models.Model):
 
 class Purchase(models.Model):
     buyer = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    product = models.ForeignKey(Product, on_delete=models.DO_NOTHING, related_name='product')
+    product = models.ForeignKey(
+        to=Product,
+        on_delete=models.DO_NOTHING,
+        related_name='products')
     count = models.PositiveIntegerField()
     time = models.DateTimeField(auto_now_add=True)
 
@@ -59,5 +60,9 @@ class Purchase(models.Model):
 
 
 class Return(models.Model):
-    purchase = models.OneToOneField(to=Purchase, on_delete=models.CASCADE, primary_key=True, related_name='purchase')
+    purchase = models.OneToOneField(
+        to=Purchase,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name='purchase')
     post_time = models.DateTimeField(auto_now_add=True)

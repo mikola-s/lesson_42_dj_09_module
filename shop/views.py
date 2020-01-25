@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, TemplateView, LogoutView, FormView
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormMixin
@@ -90,12 +91,43 @@ class PurchaseCreate(DynamicSuccessUrlMixin, SuccessMessageMixin, CreateView):
     success_url = '/'
     success_message = 'successfully buy -- %(count)s %(product)s'
 
+    # def user_validator(self, check_list):
+    #
+    #     if not user:
+    #         check_list['error'] = True
+    #         check_list['error_list'] += ['unknown error']
+    #
+    #     return check_list
+
+    def purchase_validator(self, form):
+        check_list = {'error': False, 'error_list': list()}
+        user = models.Profile.objects.get(pk=self.request.user.pk)
+        product = models.Product.objects.get(pk=self.kwargs['pk'])
+        ordered_product = form.cleaned_data.get('count')
+        total_cost = ordered_product * product.price
+
+        if product.count < ordered_product:
+            check_list['error'] = True
+            messages.add_message(self.request, messages.WARNING, 'So much product is not in stock')
+
+        if total_cost >= user.cache:
+            check_list['error'] = True
+            messages.add_message(self.request, messages.WARNING, 'You don’t have enough money to buy')
+            
+        return check_list
+
     def form_valid(self, form):
-        form_add = form.save(commit=False)
-        form_add.buyer_id = self.request.user.pk
-        form_add.product_id = self.kwargs['pk']
-        form.cleaned_data.update({'product': form.instance.product.name})
-        return super().form_valid(form)
+        valid_data = self.purchase_validator(form)
+        
+        if valid_data['error']:
+            
+            return redirect(reverse_lazy('shop:purchase_list_with_mixin'))
+        else:
+            form_add = form.save(commit=False)
+            form_add.buyer_id = self.request.user.pk
+            form_add.product_id = self.kwargs['pk']
+            form.cleaned_data.update({'product': form.instance.product.name})
+            return super().form_valid(form)
 
 
 class PurchaseListWithMixin(FormMixin, ListView):
