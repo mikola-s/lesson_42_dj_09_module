@@ -91,43 +91,43 @@ class PurchaseCreate(DynamicSuccessUrlMixin, SuccessMessageMixin, CreateView):
     success_url = '/'
     success_message = 'successfully buy -- %(count)s %(product)s'
 
-    # def user_validator(self, check_list):
-    #
-    #     if not user:
-    #         check_list['error'] = True
-    #         check_list['error_list'] += ['unknown error']
-    #
-    #     return check_list
-
     def purchase_validator(self, form):
-        check_list = {'error': False, 'error_list': list()}
+        error_check = False
         user = models.Profile.objects.get(pk=self.request.user.pk)
         product = models.Product.objects.get(pk=self.kwargs['pk'])
         ordered_product = form.cleaned_data.get('count')
         total_cost = ordered_product * product.price
 
         if product.count < ordered_product:
-            check_list['error'] = True
+            error_check = True
             messages.add_message(self.request, messages.WARNING, 'So much product is not in stock')
 
         if total_cost >= user.cache:
-            check_list['error'] = True
+            error_check = True
             messages.add_message(self.request, messages.WARNING, 'You don’t have enough money to buy')
-            
-        return check_list
+
+        if error_check:
+            return redirect(reverse_lazy('shop:purchase_list_with_mixin'))
+
+        return {'total_cost': total_cost, 'user': user, 'product': product}
 
     def form_valid(self, form):
         valid_data = self.purchase_validator(form)
-        
-        if valid_data['error']:
-            
-            return redirect(reverse_lazy('shop:purchase_list_with_mixin'))
-        else:
-            form_add = form.save(commit=False)
-            form_add.buyer_id = self.request.user.pk
-            form_add.product_id = self.kwargs['pk']
-            form.cleaned_data.update({'product': form.instance.product.name})
-            return super().form_valid(form)
+
+        valid_data['user'].cash -= valid_data['total_cost']
+        valid_data['user'].save()
+        valid_data['product'].count -= valid_data['total_cost']
+        valid_data['product'].save()
+
+        messages.add_message(
+            self.request, messages.SUCCESS,
+            f'Success purchase {valid_data["product"].name} ({valid_data["total_cost"]})')
+
+        form_add = form.save(commit=False)
+        form_add.buyer_id = self.request.user.pk
+        form_add.product_id = self.kwargs['pk']
+        form.cleaned_data.update({'product': form.instance.product.name})
+        return super().form_valid(form)
 
 
 class PurchaseListWithMixin(FormMixin, ListView):
@@ -150,22 +150,49 @@ class PurchaseListWithMixin(FormMixin, ListView):
     #     qs = self.model.objects.filter(pos)
 
 
-class ReturnCreateWithMixin(SuccessMessageMixin, CreateView):
-    template_name = 'shop/return/create.html'
-    form_class = forms.ReturnCreateForm
-    success_url = '/purchase_list_with_mixin/'
-    success_message = 'You send return form'
+class ReturnCreateWithMixin(CreateView):
+    template_name = 'shop/purchase/create.html'
+    form_class = forms.PurchaseCreateForm
+    model = models.Purchase
+    success_url = '/'
 
-    def get_success_message(self, cleaned_data):
-        purchase = cleaned_data.get('purchase')
-        if purchase:
-            self.success_message = f'You have return: {purchase.product.name} ' \
-                                   f'({purchase.count}) bought: {purchase.time}'
-        return self.success_message
+    def purchase_validator(self, form):
+        error_check = False
+        user = models.Profile.objects.get(pk=self.request.user.pk)
+        product = models.Product.objects.get(pk=self.kwargs['pk'])
+        ordered_product = form.cleaned_data.get('count')
+        total_cost = ordered_product * product.price
 
-    def form_invalid(self, form):
-        messages.add_message(self.request, messages.WARNING, "The form has already been submitted")
-        return redirect(reverse_lazy('shop:purchase_list_with_mixin'))
+        if product.count < ordered_product:
+            error_check = True
+            messages.add_message(self.request, messages.WARNING, 'So much product is not in stock')
+
+        if total_cost >= user.cache:
+            error_check = True
+            messages.add_message(self.request, messages.WARNING, 'You don’t have enough money to buy')
+
+        if error_check:
+            return redirect(reverse_lazy('shop:purchase_list_with_mixin'))
+
+        return {'total_cost': total_cost, 'user': user, 'product': product}
+
+    def form_valid(self, form):
+        valid_data = self.purchase_validator(form)
+
+        valid_data['user'].cash -= valid_data['total_cost']
+        valid_data['user'].save()
+        valid_data['product'].count -= valid_data['total_cost']
+        valid_data['product'].save()
+
+        messages.add_message(
+            self.request, messages.SUCCESS,
+            f'Success purchase {valid_data["product"].name} ({valid_data["total_cost"]})')
+
+        form_add = form.save(commit=False)
+        form_add.buyer_id = self.request.user.pk
+        form_add.product_id = self.kwargs['pk']
+        form.cleaned_data.update({'product': form.instance.product.name})
+        return super().form_valid(form)
 
 
 class PurchaseList(ListView):
