@@ -8,12 +8,12 @@ from django.dispatch import receiver
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(to=User, on_delete=models.CASCADE, related_name='profiles')
+    user = models.OneToOneField(to=User, on_delete=models.CASCADE, related_name='profile')
     cash = models.DecimalField(
         decimal_places=2,
         max_digits=12,
         default=10000.00,
-        validators=[MinValueValidator(Decimal('0.01'))]
+        validators=[MinValueValidator(Decimal('0.00'))]
     )
 
     def __str__(self):
@@ -37,7 +37,7 @@ class Product(models.Model):
     price = models.DecimalField(
         decimal_places=2,
         max_digits=12,
-        validators=[MinValueValidator(Decimal('0.01'))])
+        validators=[MinValueValidator(Decimal('0.00'))])
     photo = models.FileField(upload_to='shop/product_image/')
     count = models.PositiveIntegerField()
 
@@ -50,7 +50,7 @@ class Purchase(models.Model):
     product = models.ForeignKey(
         to=Product,
         on_delete=models.DO_NOTHING,
-        related_name='products')
+        related_name='product')
     count = models.PositiveIntegerField()
     time = models.DateTimeField(auto_now_add=True)
 

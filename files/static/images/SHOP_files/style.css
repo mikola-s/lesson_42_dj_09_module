@@ -107,10 +107,10 @@ em {
 }
 
 #cash {
-    position: fixed;
-    /*background: red;*/
-    left: 0;
-    /*top: 0;*/
+    position: absolute;
+    background: red;
+    left: 50%;
+    top: 0;
     z-index: 200;
-    /*transform-origin: 50% 100%;*/
+    transform-origin: 50% 50%;
 }
