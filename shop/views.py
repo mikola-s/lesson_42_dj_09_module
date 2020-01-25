@@ -160,10 +160,6 @@ class PurchaseList(FormMixin, ListView):
             F('count') * F('product__price'), output_field=DecimalField()))
         return qs
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     qs = self.model.objects.filter(pos)
-
 
 class ReturnCreate(CreateView):
     template_name = 'shop/return/create.html'
