@@ -11,6 +11,8 @@ from django.contrib import messages
 from django.views.generic import FormView
 from django.db.models import ExpressionWrapper, Sum, F, Func, Value, DecimalField
 from django.urls import reverse_lazy, reverse
+from datetime import timedelta
+from django.utils import timezone
 
 from . import models
 from . import forms
@@ -33,6 +35,14 @@ class YouCash:
         if self.request.user.pk is not None:
             context.update({'cash': self.request.user.profile.cash})
         return context
+
+
+class SuccessUrl:
+    def get_success_url(self):
+        url = self.request.META.get('HTTP_REFERER')
+        if url:
+            return url
+        return super().get_success_url()
 
 
 class IndexView(YouCash, ListView):
@@ -161,6 +171,7 @@ class PurchaseList(YouCash, FormMixin, ListView):
     page_kwarg = 'page'
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
+
     # qs = model.objects.filter(purchase__post_time=)
 
     def get_queryset(self):
@@ -191,12 +202,24 @@ class PurchaseDelete(DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-class ReturnCreate(CreateView):
+class ReturnCreate(SuccessUrl, CreateView):
     template_name = 'shop/return/create.html'
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
 
+    @staticmethod
+    def return_validator(form):
+        period = form.cleaned_data['purchase'].time + timedelta(minutes=3)
+        if period < timezone.now():
+            return True
+        return False
+
     def form_valid(self, form):
+
+        if self.return_validator(form):
+            messages.add_message(self.request, messages.WARNING, 'Return time is over')
+            return redirect(self.get_success_url())
+
         purchase = form.cleaned_data["purchase"]
         messages.add_message(self.request, messages.SUCCESS,
                              f'You have return: {purchase.product.name} ({purchase.count}) '
@@ -205,7 +228,7 @@ class ReturnCreate(CreateView):
 
     def form_invalid(self, form):
         messages.add_message(self.request, messages.WARNING, "The return-form has already been submitted")
-        return redirect(reverse_lazy('shop:purchase_list'))
+        return redirect(self.get_success_url())
 
 
 class ReturnList(ListView):
