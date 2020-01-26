@@ -53,6 +53,7 @@ class Purchase(models.Model):
         related_name='product')
     count = models.PositiveIntegerField()
     time = models.DateTimeField(auto_now_add=True)
+    return_status = models.BooleanField(default=True)
 
     def __str__(self):
         time = localtime(self.time).strftime("%Y-%m-%d %H:%M:%S")

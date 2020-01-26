@@ -2,11 +2,24 @@
     <form action="{% url 'shop:return_create' %}" method="post">
         {% csrf_token %}
 
-        {% if purchase.post_time %}
+        {% if not purchase.return_status %}
 
-            <button type="submit" disabled class="nav-link btn btn-outline-secondary mx-auto">
+            <button disabled class="nav-link btn btn-outline-warning mx-auto">
+                Return rejected
+            </button>
+
+        {% elif purchase.post_time %}
+
+            <button disabled class="nav-link btn btn-outline-primary mx-auto">
                 Return request sent
             </button>
+
+        {% elif time_over >= purchase.time  %}
+
+            <button disabled class="nav-link btn btn-outline-secondary mx-auto">
+                Return time over
+            </button>
+
 
         {% else %}
 

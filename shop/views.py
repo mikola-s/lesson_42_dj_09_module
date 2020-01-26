@@ -9,7 +9,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.views.generic import FormView
-from django.db.models import ExpressionWrapper, Sum, F, Func, Value, DecimalField
+from django.db.models import ExpressionWrapper, Sum, Q, F, Func, Value, DecimalField
 from django.urls import reverse_lazy, reverse
 from datetime import timedelta
 from django.utils import timezone
@@ -18,18 +18,7 @@ from . import models
 from . import forms
 
 
-class DynamicSuccessUrlMixin(View):
-
-    def get_success_url(self):
-        url = super().get_success_url()
-        post = self.request.POST.get('success_url')
-        get = self.request.GET.get('success_url')
-        success_url = post if post else get
-        return success_url if success_url else url
-
-
 class YouCash:
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.user.pk is not None:
@@ -37,12 +26,10 @@ class YouCash:
         return context
 
 
-class SuccessUrl:
+class CustomSuccessUrl:
     def get_success_url(self):
         url = self.request.META.get('HTTP_REFERER')
-        if url:
-            return url
-        return super().get_success_url()
+        return url if url is None else super().get_success_url()
 
 
 class IndexView(YouCash, ListView):
@@ -59,7 +46,7 @@ class IndexView(YouCash, ListView):
         return context
 
 
-class UserCreate(SuccessMessageMixin, CreateView):
+class UserCreate(CustomSuccessUrl, CreateView):
     template_name = 'shop/user/user_create.html'
     form_class = UserCreationForm
     success_url = '/'
@@ -74,7 +61,7 @@ class UserCreate(SuccessMessageMixin, CreateView):
         return data
 
 
-class UserLogin(SuccessMessageMixin, LoginView):
+class UserLogin(CustomSuccessUrl, LoginView):
     template_name = 'shop/user/user_login.html'
     success_url = '/'
     success_message = '%(username)s login successfully'
@@ -90,7 +77,7 @@ class UserLogout(LogoutView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class ProductCreate(SuccessMessageMixin, CreateView):
+class ProductCreate(CustomSuccessUrl, CreateView):
     template_name = 'shop/product/create_form.html'
     form_class = forms.ProductCreateForm
     model = models.Product
@@ -98,7 +85,7 @@ class ProductCreate(SuccessMessageMixin, CreateView):
     success_message = 'success crate product %(name)s'
 
 
-class ProductUpdate(DynamicSuccessUrlMixin, SuccessMessageMixin, UpdateView):
+class ProductUpdate(CustomSuccessUrl, UpdateView):
     template_name = 'shop/product/update_form.html'
     form_class = forms.ProductCreateForm
     model = models.Product
@@ -171,18 +158,21 @@ class PurchaseList(YouCash, FormMixin, ListView):
     page_kwarg = 'page'
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
-
-    # qs = model.objects.filter(purchase__post_time=)
+    # queryset = models.Purchase.objects.all()
 
     def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.annotate(post_time=F('purchase__post_time'))
-        # qs = qs.annotate(total=ExpressionWrapper(
-        #     F('count') * F('product__price'), output_field=DecimalField()))
         return qs
 
+    def get_context_data(self, **kwargs):
+        time_over = timezone.now() - timedelta(minutes=3)
+        context = super().get_context_data(**kwargs)
+        context.update({'time_over': time_over})
+        return context
 
-class PurchaseDelete(DeleteView):
+
+class PurchaseDelete(CustomSuccessUrl, DeleteView):
     model = models.Purchase
     template_name = 'shop/purchase/delete.html'
     success_url = '/return_list/'
@@ -202,15 +192,15 @@ class PurchaseDelete(DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-class ReturnCreate(SuccessUrl, CreateView):
+class ReturnCreate(CustomSuccessUrl, CreateView):
     template_name = 'shop/return/create.html'
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
 
     @staticmethod
     def return_validator(form):
-        period = form.cleaned_data['purchase'].time + timedelta(minutes=3)
-        if period < timezone.now():
+        time_over = form.cleaned_data['purchase'].time + timedelta(minutes=3)
+        if time_over < timezone.now():
             return True
         return False
 
@@ -261,6 +251,8 @@ class ReturnDelete(DeleteView):  # return reject
 
     def delete(self, request, *args, **kwargs):
         qs = self.model.objects.get(pk=kwargs['pk']).purchase
+        qs.return_status = False
+        qs.save()
         messages.add_message(self.request, messages.SUCCESS,
                              f'{qs.product.name} ({qs.count}) left with the buyer')
         return super().delete(request, *args, **kwargs)
