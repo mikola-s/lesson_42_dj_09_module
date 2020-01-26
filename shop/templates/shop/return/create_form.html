@@ -1,8 +1,8 @@
 <div class="mx-auto mt-1">
-    <form action="{% url 'shop:return_create' purchase.pk %}" method="post">
+    <form action="{% url 'shop:return_create' %}" method="post">
         {% csrf_token %}
 
-        {% if post_time %}
+        {% if purchase.post_time %}
 
             <button type="submit" disabled class="nav-link btn btn-outline-secondary mx-auto">
                 Return request sent
@@ -10,6 +10,7 @@
 
         {% else %}
 
+            <input type="hidden" name="purchase" value="{{ purchase.pk }}">
             <button type="submit" class="nav-link btn btn-outline-info mx-auto">
                 Return product
             </button>

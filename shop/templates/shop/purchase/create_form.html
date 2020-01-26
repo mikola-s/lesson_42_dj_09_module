@@ -1,11 +1,22 @@
 <form class="px-0" action="{% url 'shop:purchase_create' product.pk %}" method="post">
     {% csrf_token %}
     {% include 'shop/page_item/success_url.html' %}
-    <button type="submit" class="col nav-link btn btn-outline-info mx-auto">Buy</button>
+    <button
+            type="submit"
+            class="col nav-link btn btn-outline-info mx-auto"
+            {% if product.count == 0 %} disabled {% endif %}
+    >Buy
+    </button>
+
     <input type="number"
+        {% if product.count == 0 %}
+           disabled
+           value="0"
+        {% else %}
+           value="1"
+        {% endif %}
            min="0"
            max="{{ product.count }}"
-           value="1"
            class="numberinput form-control pl-2 pr-1 py-3 text-right m-0 mt-2"
            required=""
            name="count"

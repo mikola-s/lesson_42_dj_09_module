@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import IndexView, UserCreate, UserLogin, UserLogout, ProductCreate, ProductUpdate
-from .views import PurchaseCreate, PurchaseList, PurchaseDelete, PurchaseList
-from .views import ReturnCreate, ReturnList, ReturnDelete, ReturnCreate
+from .views import PurchaseCreate, PurchaseDelete, PurchaseList
+from .views import ReturnList, ReturnDelete, ReturnCreate
 
 
 app_name = 'shop'
@@ -19,7 +19,7 @@ urlpatterns = [
     path('purchase_delete/<int:pk>/', PurchaseDelete.as_view(), name='purchase_delete'),
     path('return_list/', ReturnList.as_view(), name='return_list'),
     # path('return_create/', ReturnCreate.as_view(), name='return_create'),
-    path('return_create/<int:pk>/', ReturnCreate.as_view(), name='return_create'), # todo try
+    path('return_create/', ReturnCreate.as_view(), name='return_create'),
     path('return_delete/<int:pk>/', ReturnDelete.as_view(), name='return_delete'),
 ]
 
