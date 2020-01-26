@@ -28,8 +28,8 @@ class YouCash:
 
 class CustomSuccessUrl:
     def get_success_url(self):
-        url = self.request.META.get('HTTP_REFERER')
-        return url if url is None else super().get_success_url()
+        self.success_url = self.request.META.get('HTTP_REFERER', False) or self.success_url
+        return self.success_url
 
 
 class IndexView(YouCash, ListView):
@@ -46,7 +46,7 @@ class IndexView(YouCash, ListView):
         return context
 
 
-class UserCreate(CustomSuccessUrl, CreateView):
+class UserCreate(CreateView):
     template_name = 'shop/user/user_create.html'
     form_class = UserCreationForm
     success_url = '/'
@@ -61,7 +61,7 @@ class UserCreate(CustomSuccessUrl, CreateView):
         return data
 
 
-class UserLogin(CustomSuccessUrl, LoginView):
+class UserLogin(LoginView):
     template_name = 'shop/user/user_login.html'
     success_url = '/'
     success_message = '%(username)s login successfully'
@@ -77,7 +77,7 @@ class UserLogout(LogoutView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class ProductCreate(CustomSuccessUrl, CreateView):
+class ProductCreate(CreateView):
     template_name = 'shop/product/create_form.html'
     form_class = forms.ProductCreateForm
     model = models.Product
@@ -85,17 +85,19 @@ class ProductCreate(CustomSuccessUrl, CreateView):
     success_message = 'success crate product %(name)s'
 
 
-class ProductUpdate(CustomSuccessUrl, UpdateView):
+class ProductUpdate(UpdateView):
     template_name = 'shop/product/update_form.html'
     form_class = forms.ProductCreateForm
     model = models.Product
     success_url = '/'
     success_message = 'success update product %(name)s'
 
+    # todo custom success url
+
     # todo: прописать картинки
 
 
-class PurchaseCreate(CreateView):
+class PurchaseCreate(CustomSuccessUrl, CreateView):
     template_name = 'shop/purchase/create.html'
     form_class = forms.PurchaseCreateForm
     model = models.Purchase
@@ -117,7 +119,8 @@ class PurchaseCreate(CreateView):
         if total_cost >= user.cash:
             error_check = True
             messages.add_message(self.request, messages.WARNING,
-                                 f'You need {total_cost.normalize()} ₴ for buy {product.name} ({ordered_product})')
+                                 f'You need {total_cost.normalize()} ₴ '
+                                 f'for buy {product.name} ({ordered_product})')
 
         return {'error_check': error_check,
                 'total_cost': total_cost,
@@ -130,7 +133,7 @@ class PurchaseCreate(CreateView):
         valid_data = self.purchase_validator(form)
 
         if valid_data['error_check']:
-            return redirect(reverse_lazy('shop:index'))
+            return redirect(self.success_url)
         else:
             valid_data['user'].cash -= valid_data['total_cost']
             valid_data['user'].save()
@@ -158,7 +161,6 @@ class PurchaseList(YouCash, FormMixin, ListView):
     page_kwarg = 'page'
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
-    # queryset = models.Purchase.objects.all()
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -172,7 +174,7 @@ class PurchaseList(YouCash, FormMixin, ListView):
         return context
 
 
-class PurchaseDelete(CustomSuccessUrl, DeleteView):
+class PurchaseDelete(DeleteView):
     model = models.Purchase
     template_name = 'shop/purchase/delete.html'
     success_url = '/return_list/'
@@ -217,7 +219,8 @@ class ReturnCreate(CustomSuccessUrl, CreateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.add_message(self.request, messages.WARNING, "The return-form has already been submitted")
+        messages.add_message(self.request, messages.WARNING,
+                             "The return-form has already been submitted")
         return redirect(self.get_success_url())
 
 
