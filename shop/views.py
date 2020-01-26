@@ -177,10 +177,17 @@ class PurchaseDelete(DeleteView):
     success_url = '/return_list/'
 
     def delete(self, request, *args, **kwargs):
-        qs = self.model.objects.get(pk=kwargs['pk'])
+        purchase = self.model.objects.get(pk=kwargs['pk'])
+        total_cost = purchase.product.price * purchase.count
+
+        purchase.buyer.profile.cash += total_cost
+        purchase.buyer.profile.save()
+        purchase.product.count += purchase.count
+        purchase.product.save()
+
         messages.add_message(self.request, messages.SUCCESS,
-                             f'Return in store {qs.product.name} ({qs.count}) confirmed. '
-                             f'Return {qs.buyer.username} {qs.count * qs.product.price} ₴')
+                             f'Return in store {purchase.product.name} ({purchase.count}) confirmed. '
+                             f'Return {purchase.buyer.username} {purchase.count * purchase.product.price} ₴')
         return super().delete(request, *args, **kwargs)
 
 
