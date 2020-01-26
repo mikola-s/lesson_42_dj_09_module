@@ -171,7 +171,7 @@ class PurchaseList(YouCash, FormMixin, ListView):
         return qs
 
 
-class PurchaseDelete(DeleteView):  # return accept
+class PurchaseDelete(DeleteView):
     model = models.Purchase
     template_name = 'shop/purchase/delete.html'
     success_url = '/return_list/'
@@ -197,7 +197,7 @@ class ReturnCreate(CreateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.add_message(self.request, messages.WARNING, "The form has already been submitted")
+        messages.add_message(self.request, messages.WARNING, "The return-form has already been submitted")
         return redirect(reverse_lazy('shop:purchase_list'))
 
 
