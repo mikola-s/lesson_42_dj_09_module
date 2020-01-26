@@ -13,9 +13,11 @@ function randomInt(min, max){
 }
 
 $('#id_photo').change( (event) => {
-    $('#id_label').text(event.target.files[0].name)
+    let fileName = event.target.files[0].name
+    $('#id_label').text(fileName)
     let str = event.target.files[0].name.replace('icons8-', '').replace('.svg','')
     $('#id_name').attr('value', str)
     $('#id_price').attr('value', getRndFloatInRange(2,50, 1000))
     $('#id_count').attr('value', randomInt(10, 100))
+
 })

@@ -1,16 +1,20 @@
 {% extends 'shop/page_item/base.html' %}
 {% load staticfiles %}
+{% load static %}
 {% load crispy_forms_tags %}
 
 {% block content %}
 
     <div class="col-md-8 col-sm-8 col-12 col box">
+
+
         <div class="mx-auto">
 
             {% include 'shop/page_item/messages.html' %}
             <h2>Create product</h2>
-            <p class="text-info">Choice image for auto fill form</p>
-            <form method="post" enctype="multipart/form-data" class="form col-6 mx-auto">
+            <p class="text-info">Choice image for random values auto fill form field</p>
+
+            <form method="post" enctype="multipart/form-data" class="form col-7 mx-auto">
                 {% csrf_token %}
 
                 <div class="form-group mx-0 mb-0">
@@ -51,7 +55,7 @@
                             <p class="invalid-feedback"><strong>{{ error|striptags }}</strong></p>
                         {% endfor %}
                     {% endif %}
-                    </div>
+                </div>
 
                 <div class="form-group mb-0">
                     {{ form.count|as_crispy_field }}
@@ -64,6 +68,7 @@
 
 
             </form>
+
         </div>
     </div>
 
