@@ -1,7 +1,7 @@
 ## Django module
 
 #### superuser: 
-mikola-s (pwd: 1)
+- mikola-s (pwd: 1)
 
 #### users:
 - user1 (pwd: 1)

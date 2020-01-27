@@ -17,6 +17,8 @@ from shop import forms
 
 
 class AdminAccess(UserPassesTestMixin):
+    """ mixin for admin access """
+
     raise_exception = False
     login_url = reverse_lazy('shop:user_login')
 
@@ -31,6 +33,8 @@ class AdminAccess(UserPassesTestMixin):
 
 
 class UserAccess(AdminAccess):
+    """ mixin for user access """
+
     def test_func(self):
         return self.request.user.is_authenticated
 
@@ -42,13 +46,16 @@ class UserAccess(AdminAccess):
 
 
 class CustomSuccessUrl:
+    """ mixin for return to prev page. Example: http://127.0.0.1:8000/?page=2  """
 
     def get_success_url(self):
         self.success_url = self.request.META.get('HTTP_REFERER', False) or self.success_url
         return self.success_url
 
 
-class IndexView(ListView):
+class ProductList(ListView):
+    """ home page '/' """
+
     template_name = 'shop/product/index.html'
     model = models.Product
     queryset = model.objects.all()
@@ -56,16 +63,18 @@ class IndexView(ListView):
     paginate_by = 8
     ordering = 'price'
 
-    def get_context_data(self, **kwargs):  # todo for debug (delete)
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'purchase_create_form': forms.PurchaseCreateForm})
+        context.update({'purchase_create_form': forms.PurchaseCreateForm})  # button buy
         return context
 
 
 class UserCreate(CreateView):
+    """ create user form page '/user_create/' """
+
     template_name = 'shop/user/user_create.html'
-    form_class = UserCreationForm
     success_url = '/'
+    form_class = UserCreationForm
     success_message = 'Create user %(username)s successful'
 
     def form_valid(self, form):
@@ -78,12 +87,16 @@ class UserCreate(CreateView):
 
 
 class UserLogin(LoginView):
+    """ login user form page '/user_login/' """
+
     template_name = 'shop/user/user_login.html'
     success_url = '/'
     success_message = '%(username)s login successfully'
 
 
 class UserLogout(LogoutView):
+    """ user logout """
+
     template_name = 'shop/user/user_logout.html'
     next_page = '/'
 
@@ -94,26 +107,32 @@ class UserLogout(LogoutView):
 
 
 class ProductCreate(AdminAccess, CreateView):
-    template_name = reverse_lazy('shop:product_create')
+    """ product create form page '/product_create/' """
+
+    template_name = 'shop/product/create_form.html'
+    success_url = '/product_create/'
     form_class = forms.ProductCreateForm
     model = models.Product
-    success_url = reverse_lazy('shop:product_create')
     success_message = 'success crate product %(name)s'
 
 
 class ProductUpdate(AdminAccess, UpdateView):
-    template_name = reverse_lazy('shop:product_update')
+    """ product update form page '/product_update/' """
+
+    template_name = 'shop/product/update_form.html'
+    success_url = '/'
     form_class = forms.ProductCreateForm
     model = models.Product
-    success_url = reverse_lazy('shop:index')
     success_message = 'success update product %(name)s'
 
 
 class PurchaseCreate(UserAccess, CustomSuccessUrl, CreateView):
+    """ purchase create page '/' button 'Buy'. Create and validate  """
+
     template_name = 'shop/purchase/create.html'
+    success_url = '/'
     form_class = forms.PurchaseCreateForm
     model = models.Purchase
-    success_url = '/'
 
     def purchase_validator(self, form):
         error_check = False
@@ -165,14 +184,16 @@ class PurchaseCreate(UserAccess, CustomSuccessUrl, CreateView):
 
 
 class PurchaseList(UserAccess, FormMixin, ListView):
-    template_name = reverse_lazy('shop:purchase_list')
+    """ Purchase list page '/purchase_list/' """
+
+    template_name = 'shop/purchase/list.html'
+    success_url = '/purchase_list/'
     model = models.Purchase
     context_object_name = 'purchases'
     paginate_by = 6
     ordering = '-time'
     page_kwarg = 'page'
     form_class = forms.ReturnCreateForm
-    success_url = '/purchase_list/'
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -187,9 +208,12 @@ class PurchaseList(UserAccess, FormMixin, ListView):
 
 
 class PurchaseDelete(AdminAccess, DeleteView):
-    model = models.Purchase
+    """ purchase delete & return money & product.
+    Page '/return_list/' button 'return' """
+
     template_name = 'shop/purchase/delete.html'
     success_url = '/return_list/'
+    model = models.Purchase
 
     def delete(self, request, *args, **kwargs):
         purchase = self.model.objects.get(pk=kwargs['pk'])
@@ -207,9 +231,11 @@ class PurchaseDelete(AdminAccess, DeleteView):
 
 
 class ReturnCreate(UserAccess, CustomSuccessUrl, CreateView):
+    """ create return form page '/purchase_list/' button 'Return product' """
+
     template_name = 'shop/return/create.html'
-    form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
+    form_class = forms.ReturnCreateForm
 
     @staticmethod
     def return_validator(form):
@@ -237,6 +263,8 @@ class ReturnCreate(UserAccess, CustomSuccessUrl, CreateView):
 
 
 class ReturnList(AdminAccess, ListView):
+    """ List users return page '/return_list/' """
+
     template_name = 'shop/return/list.html'
     model = models.Return
     context_object_name = 'returns'
@@ -257,7 +285,8 @@ class ReturnList(AdminAccess, ListView):
 
 
 class ReturnDelete(AdminAccess, DeleteView):
-    login_url = reverse_lazy('shop:user_login')
+    """ reject user return. Page '/return_list/' button 'No return' """
+
     model = models.Return
     template_name = 'shop/return/delete.html'
     success_url = '/return_list/'
