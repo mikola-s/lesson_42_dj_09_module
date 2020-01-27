@@ -1,7 +1,7 @@
 {% if user.is_authenticated and not user.is_superuser %}
     <div id="cash">
         <h1 class="nav-link text-center">
-            You cash <br> {{ cash|floatformat:"-2" }} ₴
+            You cash <br> {{ user.profile.cash|floatformat:"-2" }} ₴
         </h1>
     </div>
 {% endif %}

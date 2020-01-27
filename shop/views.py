@@ -1,24 +1,19 @@
-from abc import ABC
-
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.contrib.auth.models import User
-from django.contrib.auth.views import LoginView, TemplateView, LogoutView, FormView, redirect_to_login
+from django.contrib.auth.views import LoginView, LogoutView, redirect_to_login
+from django.views.generic.base import View
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormMixin
-from django.views import View
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
-from django.views.generic import FormView
-from django.db.models import ExpressionWrapper, Sum, Q, F, Func, Value, DecimalField
+from django.db.models import ExpressionWrapper, F, DecimalField
 from django.urls import reverse_lazy, reverse
 from datetime import timedelta
 from django.utils import timezone
 
-from . import models
-from . import forms
+from shop import models
+from shop import forms
 
 
 class AdminAccess(UserPassesTestMixin):
@@ -30,7 +25,9 @@ class AdminAccess(UserPassesTestMixin):
 
     def handle_no_permission(self):
         messages.add_message(self.request, messages.ERROR, 'ACCESS DENIED')
-        return redirect_to_login(self.request.get_full_path(), self.get_login_url(), self.get_redirect_field_name())
+        return redirect_to_login(self.request.get_full_path(),
+                                 self.get_login_url(),
+                                 self.get_redirect_field_name())
 
 
 class UserAccess(AdminAccess):
@@ -39,24 +36,19 @@ class UserAccess(AdminAccess):
 
     def handle_no_permission(self):
         messages.add_message(self.request, messages.ERROR, 'SIGN IN FOR ENTER')
-        return redirect_to_login(self.request.get_full_path(), self.get_login_url(), self.get_redirect_field_name())
-
-
-class YouCash:
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.pk is not None:
-            context.update({'cash': self.request.user.profile.cash})
-        return context
+        return redirect_to_login(self.request.get_full_path(),
+                                 self.get_login_url(),
+                                 self.get_redirect_field_name())
 
 
 class CustomSuccessUrl:
+
     def get_success_url(self):
         self.success_url = self.request.META.get('HTTP_REFERER', False) or self.success_url
         return self.success_url
 
 
-class IndexView(YouCash, ListView):
+class IndexView(ListView):
     template_name = 'shop/product/index.html'
     model = models.Product
     queryset = model.objects.all()
@@ -102,7 +94,7 @@ class UserLogout(LogoutView):
 
 
 class ProductCreate(AdminAccess, CreateView):
-    template_name = 'shop/product/create_form.html'
+    template_name = reverse_lazy('shop:product_create')
     form_class = forms.ProductCreateForm
     model = models.Product
     success_url = reverse_lazy('shop:product_create')
@@ -110,10 +102,10 @@ class ProductCreate(AdminAccess, CreateView):
 
 
 class ProductUpdate(AdminAccess, UpdateView):
-    template_name = 'shop/product/update_form.html'
+    template_name = reverse_lazy('shop:product_update')
     form_class = forms.ProductCreateForm
     model = models.Product
-    success_url = '/'
+    success_url = reverse_lazy('shop:index')
     success_message = 'success update product %(name)s'
 
 
@@ -154,26 +146,26 @@ class PurchaseCreate(UserAccess, CustomSuccessUrl, CreateView):
 
         if valid_data['error_check']:
             return redirect(self.success_url)
-        else:
-            valid_data['user'].cash -= valid_data['total_cost']
-            valid_data['user'].save()
-            valid_data['product'].count -= valid_data['ordered_product']
-            valid_data['product'].save()
 
-            messages.add_message(
-                self.request, messages.SUCCESS,
-                f"Success purchase: {valid_data['product'].name} ({valid_data['ordered_product']}) "
-                f"total cost {valid_data['total_cost']}")
+        valid_data['user'].cash -= valid_data['total_cost']
+        valid_data['user'].save()
+        valid_data['product'].count -= valid_data['ordered_product']
+        valid_data['product'].save()
 
-            form_add = form.save(commit=False)
-            form_add.buyer_id = self.request.user.pk
-            form_add.product_id = self.kwargs['pk']
-            form.cleaned_data.update({'product': form.instance.product.name})
-            return super().form_valid(form)
+        messages.add_message(
+            self.request, messages.SUCCESS,
+            f"Success purchase: {valid_data['product'].name} ({valid_data['ordered_product']}) "
+            f"total cost {valid_data['total_cost']}")
+
+        form_add = form.save(commit=False)
+        form_add.buyer_id = self.request.user.pk
+        form_add.product_id = self.kwargs['pk']
+        form.cleaned_data.update({'product': form.instance.product.name})
+        return super().form_valid(form)
 
 
-class PurchaseList(YouCash, UserAccess, FormMixin, ListView):
-    template_name = 'shop/purchase/list.html'
+class PurchaseList(UserAccess, FormMixin, ListView):
+    template_name = reverse_lazy('shop:purchase_list')
     model = models.Purchase
     context_object_name = 'purchases'
     paginate_by = 6
@@ -214,7 +206,7 @@ class PurchaseDelete(AdminAccess, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-class ReturnCreate(CustomSuccessUrl, UserAccess, CreateView):
+class ReturnCreate(UserAccess, CustomSuccessUrl, CreateView):
     template_name = 'shop/return/create.html'
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
@@ -259,11 +251,12 @@ class ReturnList(AdminAccess, ListView):
     def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.annotate(total=ExpressionWrapper(
-            F('purchase__count') * F('purchase__product__price'), output_field=DecimalField()))
+            F('purchase__count') * F('purchase__product__price'),
+            output_field=DecimalField()))
         return qs
 
 
-class ReturnDelete(AdminAccess, DeleteView, ABC):
+class ReturnDelete(AdminAccess, DeleteView):
     login_url = reverse_lazy('shop:user_login')
     model = models.Return
     template_name = 'shop/return/delete.html'
