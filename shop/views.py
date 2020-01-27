@@ -1,7 +1,10 @@
+from abc import ABC
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.models import User
-from django.contrib.auth.views import LoginView, TemplateView, LogoutView, FormView
+from django.contrib.auth.views import LoginView, TemplateView, LogoutView, FormView, redirect_to_login
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormMixin
 from django.views import View
@@ -16,6 +19,27 @@ from django.utils import timezone
 
 from . import models
 from . import forms
+
+
+class AdminAccess(UserPassesTestMixin):
+    raise_exception = False
+    login_url = reverse_lazy('shop:user_login')
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        messages.add_message(self.request, messages.ERROR, 'ACCESS DENIED')
+        return redirect_to_login(self.request.get_full_path(), self.get_login_url(), self.get_redirect_field_name())
+
+
+class UserAccess(AdminAccess):
+    def test_func(self):
+        return self.request.user.is_authenticated
+
+    def handle_no_permission(self):
+        messages.add_message(self.request, messages.ERROR, 'SIGN IN FOR ENTER')
+        return redirect_to_login(self.request.get_full_path(), self.get_login_url(), self.get_redirect_field_name())
 
 
 class YouCash:
@@ -77,27 +101,23 @@ class UserLogout(LogoutView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class ProductCreate(CreateView):
+class ProductCreate(AdminAccess, CreateView):
     template_name = 'shop/product/create_form.html'
     form_class = forms.ProductCreateForm
     model = models.Product
-    success_url = '/product_create/'
+    success_url = reverse_lazy('shop:product_create')
     success_message = 'success crate product %(name)s'
 
 
-class ProductUpdate(UpdateView):
+class ProductUpdate(AdminAccess, UpdateView):
     template_name = 'shop/product/update_form.html'
     form_class = forms.ProductCreateForm
     model = models.Product
     success_url = '/'
     success_message = 'success update product %(name)s'
 
-    # todo custom success url
 
-    # todo: прописать картинки
-
-
-class PurchaseCreate(CustomSuccessUrl, CreateView):
+class PurchaseCreate(UserAccess, CustomSuccessUrl, CreateView):
     template_name = 'shop/purchase/create.html'
     form_class = forms.PurchaseCreateForm
     model = models.Purchase
@@ -152,7 +172,7 @@ class PurchaseCreate(CustomSuccessUrl, CreateView):
             return super().form_valid(form)
 
 
-class PurchaseList(YouCash, FormMixin, ListView):
+class PurchaseList(YouCash, UserAccess, FormMixin, ListView):
     template_name = 'shop/purchase/list.html'
     model = models.Purchase
     context_object_name = 'purchases'
@@ -174,7 +194,7 @@ class PurchaseList(YouCash, FormMixin, ListView):
         return context
 
 
-class PurchaseDelete(DeleteView):
+class PurchaseDelete(AdminAccess, DeleteView):
     model = models.Purchase
     template_name = 'shop/purchase/delete.html'
     success_url = '/return_list/'
@@ -194,7 +214,7 @@ class PurchaseDelete(DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-class ReturnCreate(CustomSuccessUrl, CreateView):
+class ReturnCreate(CustomSuccessUrl, UserAccess, CreateView):
     template_name = 'shop/return/create.html'
     form_class = forms.ReturnCreateForm
     success_url = '/purchase_list/'
@@ -224,7 +244,7 @@ class ReturnCreate(CustomSuccessUrl, CreateView):
         return redirect(self.get_success_url())
 
 
-class ReturnList(ListView):
+class ReturnList(AdminAccess, ListView):
     template_name = 'shop/return/list.html'
     model = models.Return
     context_object_name = 'returns'
@@ -242,12 +262,9 @@ class ReturnList(ListView):
             F('purchase__count') * F('purchase__product__price'), output_field=DecimalField()))
         return qs
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(object_list=None, **kwargs)
-        return context
 
-
-class ReturnDelete(DeleteView):  # return reject
+class ReturnDelete(AdminAccess, DeleteView, ABC):
+    login_url = reverse_lazy('shop:user_login')
     model = models.Return
     template_name = 'shop/return/delete.html'
     success_url = '/return_list/'
